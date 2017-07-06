@@ -4,7 +4,7 @@ export function callNative (manage, event, map, fn) {
     case 'getUserInfo':
       data = {
         userId: '11111',
-        userAuth: ''
+        userAuth: '111'
       }
       break
     case 'login':

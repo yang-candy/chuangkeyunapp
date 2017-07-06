@@ -3,11 +3,11 @@
   <div class="c-wp c-author">
     <div class="c-auth-top">
       <div class="c-auth-bg">
-        <img :src="userInfo.bgimg || defaultData.navBarImg">
+        <img :src="userInfo.bgimg || defaultData.navBarImg" @error="loadError($event)">
       </div>
       <div class="c-auth-info">
         <div class="c-auth-head">
-          <img id="c-auth-img" class="c-auth-img" :src="userInfo.userpic || defaultData.headImg">
+          <img id="c-auth-img" class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" @error="loadError($event)">
         </div>
         <div class="c-author-intro">
           <h3 ref="authTitle" class="c-auth-title">{{userInfo.name}}</h3>
@@ -35,22 +35,25 @@
           <li v-for="(item, index) in newsList" @click.stop="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info">
-                <img class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" alt="">
+                <img class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" alt="" @error="loadError($event)">
                 <p class="c-auth-title">{{userInfo.name}}</p>
               </div>
               
               <a class="c-att-delete" v-show="isAuthor && item['iscandelete'] === 1" @click.stop="deleteNewModal(item, index, $event)"></a>
             </div>
-            <div class="c-media-desc" v-if="item.mediatype !== 4">
+            <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg !== 0">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
-
-            <div class="c-media-content" v-if="item.mediatype === 1 || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && item.recommendShowBigImg === 0">
+              <p>{{item.title}}</p>
+              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+            </div>
+            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-              <img class="c-auth-info-img c-auth-audio-img" alt=""
+              <img class="c-auth-info-img" alt=""
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
                 :src="img" 
@@ -58,9 +61,6 @@
                 @error="loadError($event)"
                 @click="scaleQingImg($event, item, imgIndex)"
               >
-              <!-- <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
-              <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[1]" alt="" @load="resize($event)" @error="loadError($event)">
-              <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[2]" alt="" @load="resize($event)" @error="loadError($event)"> -->
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
@@ -71,7 +71,7 @@
 
             <div v-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="">
+                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
               </div>
               <span>
                 {{item.title}}
@@ -213,18 +213,12 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           self.isLoad = true
-          document.body.scrollTop = 0
           ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
-          if (self.newsList.length) {
-            self.newsList.reverse()
-          } else {
-            self.newsList = res.result.newslist
+          if (res.result.newslist.length) {
+            self.newsList = [...self.newsList, ...res.result.newslist]
           }
-          // if (res.result.userinfo) {
-          //   res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
-          // }
-          // self.newsList = res.result.newslist
           if (res.result.userinfo) {
+            // res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
             if (!self.isFirstRequest) {
               self.userInfo = res.result.userinfo
             }
@@ -550,5 +544,79 @@ export default {
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
+<style lang="stylus" scoped>
+.c-auth-top
+  .c-auth-bg
+    width 100%
+    height 6rem
+    &:after
+      content ''
+      position fixed
+      top 0
+      left 0
+      z-index 10
+      width 100%
+      height 3.2rem
+      background url(../assets/layer.png) no-repeat
+      background-size 100% 100%
+    img
+      width 100%
+      height 100%
+  .c-auth-info
+    text-align center
+    position relative
+    .c-auth-head
+      width 3rem
+      height 3rem
+      position absolute
+      top -44px
+      text-align center
+      margin auto
+      left 0
+      right 0
+      img
+        width 100%
+  .c-author-intro
+    padding 26px 20px 15px
+    text-align center
+    h3
+      font-size 17px
+      color #333
+      font-weight 400
+      margin 0
+    .c-auth-jj 
+      font-size 12px
+      color #666
+      line-height 16px
+      margin 7px 0
+    .c-auth-tips span
+      font-size 12px
+      margin 0 20px
+      &:first-of-type
+        margin 0
+        &:after
+          content ''
+          width 1px
+          height 12px
+          background #333
+          display inline-block
+          margin-left 20px
+          vertical-align -2px
+  .c-auth-follow
+    display block
+    width 105px
+    height 32px
+    line-height 32px
+    margin auto
+    margin-top: 15px;
+    border 1px solid #ccc
+    color #333
+    text-decoration none
+    font-size .6rem
+    &.on
+      color #ccc
+      border 1px solid #eee
+    
+    span
+      font-size .7rem
 </style>

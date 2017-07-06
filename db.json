@@ -148,7 +148,8 @@
         "isattention": 0,
         "iscandelete": 0,
         "mediaid": "6BADDEEFC8FE6F43",
-        "mediatype": 3,
+        "mediatype": 1,
+        "recommendShowBigImg": 0,
         "newsid": 90675,
         "pics": [
           "https://qnwww2.autoimg.cn/youchuang/g12/M12/F3/82/autohomecar__wKjBy1h_VACABUh9AAw6Ln_Kdeg162.jpg?imageView2/2/w/640"
@@ -239,6 +240,7 @@
         "iscandelete": 0,
         "mediaid": "333",
         "mediatype": 1,
+        "recommendShowBigImg": 0,
         "newsid": 101175,
         "pics": [],
         "playtime": "",
@@ -425,5 +427,272 @@
         "userpic": "https://qnwww2.autoimg.cn/youchuang/g9/M11/54/73/autohomecar__wKjBzljsQ52AWTKgAADEllW0O8w133.jpg?imageView2/1/w/120/h/120"
       }]
     }
+  },
+  "getCategoryList": {
+    "message": "",
+    "result": [{
+      "id": 2,
+      "name": "全部",
+      "sortnum": 1,
+      "usercount": 59
+    },{
+      "id": 2,
+      "name": "全部",
+      "sortnum": 1,
+      "usercount": 59
+    },{
+      "id": 2,
+      "name": "全部",
+      "sortnum": 1,
+      "usercount": 59
+    },{                  
+      "name": "自媒体",
+      "sortnum": 2,
+      "usercount": 16
+
+    }],
+    "returncode": 0
+  },
+  "getUserPageByCategory": {
+    "message": "",
+    "result": {
+      "lastId": "100000000|2017/4/27 14:00:05|18759205",
+      "loadMore": true,
+      "users": [{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "无限试驾无限试驾无限试驾无限试驾无限试驾",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://www2.autoimg.cn/youchuang/g8/M03/72/85/autohomecar__wKjBz1j-ueuAOxqEAALIEZP3Ens630.jpg"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "无限试驾无限试驾无限试驾无限试驾无限试驾",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://www2.autoimg.cn/youchuang/g8/M03/72/85/autohomecar__wKjBz1j-ueuAOxqEAALIEZP3Ens630.jpg"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M11/38/89/autohomecar__wKgFXFjpvNiAZOtqAAtdS-yQuhw839.png?imageView2/1/w/120/h/120"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "无限试驾无限试驾无限试驾无限试驾无限试驾",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://www2.autoimg.cn/youchuang/g8/M03/72/85/autohomecar__wKjBz1j-ueuAOxqEAALIEZP3Ens630.jpg"
+      },{
+        "fansnum": "",
+        "isattention": 1,
+        "title": "",
+        "userdesc": "",
+        "userid": 6098853,
+        "username": "无限试驾",
+        "userpic": "https://www2.autoimg.cn/youchuang/g8/M03/72/85/autohomecar__wKjBz1j-ueuAOxqEAALIEZP3Ens630.jpg"
+      },  {
+        "fansnum": "",
+        "isattention": 0,
+        "title": "",
+        "userdesc": "",
+        "userid": 18759205,
+        "username": "卡尔本次",
+        "userpic": ""
+      }]
+    },
+    "returncode": 0
+  },
+  "npgetvuserlist": {
+    "message": "",
+    "result": {
+      "isloadmore": 1,
+      "lastpageid": "",
+      "vuserlist": [{
+        "createtime": "2017-01-16",
+        "fansnum": "0",
+        "isattention": 0,
+        "title": "探访王四营桥事故现场 下篇",
+        "userdesc": "把汽车当成玩具的恐怕只有孩子，你还记得把汽车当成玩具是哪年的事吗？如果不记得了，我们就来一起找回那段逝去的无邪时光吧！",
+        "userid": 205625,
+        "username": "白活白活车",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g11/M15/4C/29/autohomecar__wKjBzFfew62Ac5ldAAR1TWkBy20086.jpg?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-18",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "【试“小钢炮”奥迪新A3！2.0T动力杠杠的！骚绿配色装B利器！】\n \n试驾车是台新增的喀纳斯绿的A3 40TFSI（25.5万），配上新的运动包围和前脸，真有点“小Sao萌”，只要不转到车后，乍一看就是辆“S3”啊（S3为双边双",
+        "userdesc": "汽车洋葱圈，你的汽车福利社。这里传递正能量，揭穿各种汽车黑幕、赠送买车防忽悠秘笈，更有实用的购车、用车终极妙招！",
+        "userid": 13127914,
+        "username": "汽车洋葱圈",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g16/M05/71/99/autohomecar__wKjBx1crCMGASfUZAAJqnC9lmpo666.jpg?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-17",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "跑车的后座坐不下“长腿美女”，那到底用来干啥？",
+        "userdesc": "权威，新鲜，专业，省钱，奇葩的第一原创汽车新媒体，丰富你的用车生活。",
+        "userid": 15781968,
+        "username": "有车以后",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g8/M02/73/48/autohomecar__wKjBz1c0TKuAbWPcAAPyj3TGW8k467.jpg?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2016-07-24",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "打小抄，并不光彩！",
+        "userdesc": "侃车聊车尽在車之匠；爱车，懂车就加入我们吧！",
+        "userid": 18052369,
+        "username": "車匠",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g12/M09/A6/3E/autohomecar__wKgH01dhUm2APK9TAABtggvQl3s460.jpg?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-18",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "澳洲颜值车评系列：全新福特Escape超越自我才是最大进步",
+        "userdesc": "全球汽车猛料的无障碍通道,第一时间送上海外新鲜车评熟肉！有字幕看得就是爽。",
+        "userid": 20582257,
+        "username": "66车讯",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g14/M04/55/49/autohomecar__wKgH1Vfo0eGAGrrbAABMRXr6zN0732.png?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-17",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "向极致更进一步 米其林 PILOT Sport 4 S",
+        "userdesc": "《萝卜报告》是由陈震主持的汽车评测类节目。对每一款汽车进行详细讲解，让您对每一款车了如指掌，在购买汽车时给您最大的帮助。",
+        "userid": 21728864,
+        "username": "萝卜报告",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g23/M02/59/0B/autohomecar__wKjBwFcwKv-AeVP3AAFFeoW6gAQ892.jpg?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-18",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "你以为停车就是关上门？不少人不懂这6条毁车伤人",
+        "userdesc": "买车 用车 玩车 您身边的汽车采购驾驶专家  全球第一手的新车视频 最易懂的新车图片解析   30秒懂车 懂车更懂你",
+        "userid": 21872398,
+        "username": "30秒懂车",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g17/M01/78/68/autohomecar__wKgH51j_BZaAeuk4AAAe2UkiIuE031.png?imageView2/1/w/120/h/120"
+      }, {
+        "createtime": "2017-05-17",
+        "fansnum": "0",
+        "isattention": 1,
+        "title": "最低也有700匹，这9款车乃是当今市面上最疯狂的功率怪兽！",
+        "userdesc": "欢迎来到TG星球，这里可能比其他地方有趣那么一点点。《TopGear汽车测试报告》是BBC旗下TopGear品牌杂志的简体中文版。",
+        "userid": 40259878,
+        "username": "TopGear汽车测试报告",
+        "userpic": "https://qnwww2.autoimg.cn/youchuang/g14/M01/5E/16/autohomecar__wKgH5FjsWxCANOmbAAAWnFHgLfs429.jpg?imageView2/1/w/120/h/120"
+      }]
+    },
+    "returncode": 0
   }
 }

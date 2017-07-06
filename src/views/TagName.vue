@@ -1,70 +1,75 @@
 <template>
   <!-- <keep-alive></keep-alive>>   -->
-  <div class="c-wp">
-    <div class="c-tab-list">
-      <div ref="jsTb" class="c-tab-bd js-tb" v-scroll="getMore">
-        <ul class="c-tab-ul">
-          <li v-for="(item, index) in newsList" @click.stop="toArticleDetail($event, item, index)">
-            <div class="c-media-item">
-              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
-                <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="">
-                <p class="c-auth-title">{{item.username}}</p>
+  <div class="c-wp" v-scroll="getMore">
+    <div class="c-tab-list" >
+      <pull-refresh :next="refresh" :before="beforePull">
+        <div ref="jsTb" class="c-tab-bd js-tb" slot="list">
+          <ul class="c-tab-ul">
+            <li v-for="(item, index) in newsList" @click.stop="toArticleDetail($event, item, index)">
+              <div class="c-media-item">
+                <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
+                  <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
+                  <p class="c-auth-title">{{item.username}}</p>
+                </div>
+                
+                <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
+              </div>
+              <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg !== 0">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && item.recommendShowBigImg === 0">
+                <p>{{item.title}}</p>
+                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              </div>
+              <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              </div>
+
+              <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
+                <img class="c-auth-info-img c-auth-audio-img" alt=""
+                  v-for="(img, imgIndex) in item.thumbnailpics"
+                  v-if="imgIndex < 3"
+                  :src="img" 
+                  @load="resize($event)" 
+                  @error="loadError($event)"
+                  @click="scaleQingImg($event, item, imgIndex)"
+                >
+              </div>
+
+              <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
+                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
+                <span class="media-video-btn"></span>
+                <span class="c-media-time">{{item.playtime}}</span>
+              </div>
+
+              <div v-if="item.mediatype === 4" class="c-media-audio">
+                <div class="media-audio-pic" @click.stop="createMedia($event, item)">
+                  <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
+                </div>
+                <span>
+                  {{item.title}}
+                </span>
+              </div>
+
+              <div class="c-media-oper">
+                <p>
+                  <span class="c-looked">{{item['pv'] || 0}}{{item['mediatype'] === 3 || item['mediatype'] === 4 ? '播放' : '浏览'}}</span>
+
+                  <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
+                </p>
+                <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
               </div>
               
-              <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0)"><span>＋</span> 关注</a>
-            </div>
-            <div class="c-media-desc" v-if="item.mediatype !== 4">
-              {{item.mediatype === 2 ? item.description : item.title}}
-            </div>
-
-            <div class="c-media-content" v-if="item.mediatype === 1 || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
-            </div>
-
-            <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-              <img class="c-auth-info-img c-auth-audio-img" alt=""
-                v-for="(img, imgIndex) in item.thumbnailpics"
-                v-if="imgIndex < 3"
-                :src="img" 
-                @load="resize($event)" 
-                @error="loadError($event)"
-                @click="scaleQingImg($event, item, imgIndex)"
-              >
-            </div>
-
-            <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
-              <span class="media-video-btn"></span>
-              <span class="c-media-time">{{item.playtime}}</span>
-            </div>
-
-            <div v-if="item.mediatype === 4" class="c-media-audio">
-              <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="">
-              </div>
-              <span>
-                {{item.title}}
-              </span>
-            </div>
-
-            <div class="c-media-oper">
-              <p>
-                <span class="c-looked">{{item['pv'] || 0}}{{item['mediatype'] === 3 || item['mediatype'] === 4 ? '播放' : '浏览'}}</span>
-
-                <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
-              </p>
-              <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
-            </div>
-            
-          </li>
-        </ul>
-      </div>
+            </li>
+          </ul>
+        </div>
+      </pull-refresh>
       <div class="c-loading" v-show="!isLoad">
         <span class="loading-icon"></span> 
         <p>加载中...</p>
       </div>
     </div>
-    <!-- <pull-refresh></pull-refresh> -->
+    
     <div class="c-empty" v-show="isEmpty"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
     </div>
@@ -93,9 +98,9 @@ export default {
       tabIndex: 0,
       hasReFresh: false,
       isLoad: true,
-      isEmpty: true,
+      isEmpty: false,
       isloadmore: 0,
-      pageType: 4,
+      pageType: 3,
       lastpageid: '',
       urlUserId: util.getParam('userId'),
       authInfo: {}, // 当前用户的信息（登录者）
@@ -148,41 +153,15 @@ export default {
       ApiBridge.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
         document.body.scrollTop = 0
         self.isLoad = true
-        // if (vm.data.tagListIndex !== 3 || vm.data.tagListIndex !== 0) {
-        //   ApiBridge.callNative('ClientVideoManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   });
-        // }
-        // if (vm.data.tagListIndex !== 4 || vm.data.tagListIndex !== 0) {
-
-        //   ApiBridge.callNative('ClientAudioManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   });
-        // }
         self.tabIndex = Number(index.index)
 
-        self.getPageList('set', 1)
-        // $('.js-tag-list-ul ul').eq(vm.data.tagListIndex).show().siblings().hide();
-
-        // //判断是否请求过内容
-        // if ($('.js-tag-list-ul ul').eq(vm.data.tagListIndex).html() == '') {
-        //   vm.tagList(vm.data.tagListIndex, 'set', 1);
-        // }
+        func.deleteMedia(self.media)
+        self.getPageList()
       })
     },
     getPageList: function () {
       let self = this
       let pid = self.lastpageid || ''
-      // var lastpageid = vm.data.lastpageid[index] || '';
-      // var pid = '';
-
-      // if (flag == 'up') {
-      //   pid = lastpageid;
-      // }
-
-      // if (!!vm.data.hasReFresh) {
-      //   $('.c-loading').hide();
-      // }
       util.ajax({
         url: util.api.npnewlistfortagid,
         type: 'GET',
@@ -198,15 +177,18 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          document.body.scrollTop = 0
           ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
           self.isLoad = true
           self.hasReFresh = false
-          self.newsList = res.result.newslist
+          if (res.result.newslist.length) {
+            self.newsList = [...self.newsList, ...res.result.newslist]
+          }
           self.isEmpty = !res.result.newslist.length
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastid || ''
-
+          if (self.newsList.length) {
+            self.getLocalDataForFollow()
+          }
           let pvMap = {
             'eventid': 'chejiahao_tag_list_page_pv',
             'pagename': 'chejiahao_tag_list_page',
@@ -226,7 +208,7 @@ export default {
         }
       })
     },
-    getLocalDataForFollow: function (userinfo) {
+    getLocalDataForFollow: function () {
       let self = this
       // 未登录
       if (!Number(self.authInfo.userId)) {
@@ -235,21 +217,23 @@ export default {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
-                if (v['userId'] === self.urlUserId) {
-                  self.userInfo.isattention = 1
-                }
+                self.newsList.map(function (j) {
+                  if (v['userId'] === j['userid']) {
+                    j['isattention'] = '1'
+                  }
+                })
               })
             }
           })
         } catch (e) {}
       }
     },
-    followToggle: function (e, type, userId, info) {
+    followToggle: function (e, type, item, info) {
       let self = this
       info = {
-        userId: self.authInfo.userId,
-        username: self.userInfo.name,
-        imgurl: self.userInfo.userpic
+        userId: item.userid,
+        username: item.username,
+        imgurl: item.userpic
       }
       func.followToggle(e, type, self.authInfo, info, self)
     },
@@ -293,16 +277,7 @@ export default {
     },
     getMore: function () {
       if (this.isLoad) {
-        // if (vm.data.tagListIndex !== 3) {
-        //   ApiBridge.callNative('ClientVideoManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   })
-        // }
-        // if (vm.data.tagListIndex !== 4) {
-        //   ApiBridge.callNative('ClientAudioManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   })
-        // }
+        func.deleteMedia(this.media)
         if (this.isloadmore) {
           this.isLoad = false
           this.getPageList()
@@ -316,7 +291,7 @@ export default {
         pics: news.pics,
         sharecontent: news.description,
         seriesids: news.seriesids,
-        pageType: 5
+        pageType: 3
       }
       func.scaleQingImg(e, data)
     },
@@ -331,14 +306,24 @@ export default {
         mediaType: item.mediatype,
         position: index + 1
       }
-
       func.toArticleDetail(e, data)
+    },
+    beforePull () {
+      func.deleteMedia(this.media)
+    },
+    refresh () {
+      return new Promise((resolve, reject) => {
+        this.getPageList()
+        setTimeout(() => {
+          func.deleteMedia(this.media)
+          resolve()
+        }, 1200)
+      })
     }
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-
+<style lang="stylus" scoped>
 </style>

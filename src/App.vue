@@ -1,30 +1,38 @@
 <template>
   <div id="app">
     <!-- <author></author> -->
-    <div :is="component"></div>
+    <div :is="currentView"></div>
   </div>
 </template>
 
 <script>
 import Author from './views/Author'
 import TagName from './views/TagName'
+import followMore from './views/followMore'
+import myFollow from './views/myFollow'
 
 export default {
   name: 'app',
   components: {
     Author,
-    TagName
+    TagName,
+    followMore,
+    myFollow
   },
   mounted: function () {
     if (/author/.test(window.location.href)) {
-      this.component = 'Author'
+      this.currentView = 'Author'
     } else if (/tag-name/.test(window.location.href)) {
-      this.component = 'TagName'
+      this.currentView = 'TagName'
+    } else if (/follow-more-tab/.test(window.location.href)) {
+      this.currentView = 'followMore'
+    } else if (/my-follow/.test(window.location.href)) {
+      this.currentView = 'myFollow'
     }
   },
   data: function () {
     return {
-      component: ''
+      currentView: ''
     }
   }
 }
@@ -39,5 +47,5 @@ export default {
   width: 100%;
   height: 100%;
 }
-@import './style/index.styl';
+@import './style/index.styl'
 </style>
