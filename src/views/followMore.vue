@@ -33,7 +33,8 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
-import * as ApiBridge from '../mock/apibridge.mock.js'
+require('../api/kerkee.js')
+// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'followMore',
@@ -163,7 +164,6 @@ export default {
     },
     followToggle: function (e, type, item, info) {
       let self = this
-      debugger
       info = {
         userId: item.userid,
         username: item.username,

@@ -5,7 +5,6 @@ import TagName from '../views/TagName'
 import Author from '../views/Author'
 
 Vue.use(Router)
-// debugger
 export default new Router({
   routes: [
     {

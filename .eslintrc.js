@@ -15,6 +15,10 @@ module.exports = {
   plugins: [
     'html'
   ],
+  'globals': {
+    'ApiBridge': true
+  },
+
   // add your custom rules here
   'rules': {
     // allow paren-less arrow functions

@@ -5,6 +5,16 @@
 
 import Vue from 'vue'
 import App from './App'
+  
+// require('./api/fastclick.js')
+
+// if ('addEventListener' in document) {  
+//   document.addEventListener('DOMContentLoaded', function () {  
+//     window.FastClick.attach(document.body)  
+//   }, false)  
+// }  
+const FastClick = require('fastclick')
+FastClick.attach(document.body)
 
 Vue.config.productionTip = false
 

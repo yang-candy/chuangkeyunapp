@@ -115,8 +115,9 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
-import * as ApiBridge from '../mock/apibridge.mock.js'
 import zanAndComment from '../components/zanAndComment'
+require('../api/kerkee.js')
+// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'author',
@@ -451,10 +452,20 @@ export default {
         username: self.userInfo.name,
         imgurl: self.userInfo.userpic
       }
+      // info = {
+      //   userId: '',
+      //   authId: self.authInfo.userId,
+      //   objecttypeid: '',
+      //   userAuth: '',
+      //   userAgent: '',
+      //   icon1
+      // }
       func.followToggle(e, type, self.authInfo, info, self)
     },
     // tab切换
     tabClick: function (e, index) {
+      this.newsList = []
+      this.lastpageid = ''
       this.defaultData.navIndex = index
       this.getPageInfo()
     },

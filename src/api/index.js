@@ -114,7 +114,6 @@ export function isCreatePlayer (fn) {
 
 export function createMedia (e, news, media, pageType) {
   // e.stopPropagation()
-  debugger
   if (news.status !== 0 && news.status !== 1) {
     return
   }
@@ -189,10 +188,8 @@ export function deleteMediaWatch (media) {
   window.addEventListener('scroll', function () {
     let offsetHeight = window.innerHeight
     let scrollTop = document.body.scrollTop
-    debugger
     if (media.mediaStatus) {
       if ((media.mediaHeight + media.mediaY) < scrollTop || (media.mediaY - offsetHeight > scrollTop)) {
-        debugger
         media.mediaStatus = false
         if (media.mediaType === 3) {
           ApiBridge.callNative('ClientVideoManager', 'deleteById', {

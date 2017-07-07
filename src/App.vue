@@ -1,6 +1,5 @@
 <template>
   <div id="app">
-    <!-- <author></author> -->
     <div :is="currentView"></div>
   </div>
 </template>
@@ -40,12 +39,13 @@ export default {
 
 <style lang="stylus">
 #app{
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  vertical-align: middle;
-  width: 100%;
-  height: 100%;
+  position absolute
+  top 0
+  bottom 0
+  vertical-align middle
+  width 100%
+  height 100%
+  background #fff
 }
 @import './style/index.styl'
 </style>
