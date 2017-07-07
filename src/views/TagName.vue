@@ -64,7 +64,7 @@
           </ul>
         </div>
       </pull-refresh>
-      <div class="c-loading" v-show="!isLoad">
+      <div class="c-loading" v-show="isLoad">
         <span class="loading-icon"></span> 
         <p>加载中...</p>
       </div>
@@ -155,6 +155,7 @@ export default {
         document.body.scrollTop = 0
         self.isLoad = true
         self.tabIndex = Number(index.index)
+        self.newsList = []
 
         func.deleteMedia(self.media)
         self.getPageList()
@@ -179,7 +180,7 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
-          self.isLoad = true
+          self.isLoad = false
           self.hasReFresh = false
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
@@ -277,10 +278,10 @@ export default {
       })
     },
     getMore: function () {
-      if (this.isLoad) {
+      if (!this.isLoad) {
         func.deleteMedia(this.media)
         if (this.isloadmore) {
-          this.isLoad = false
+          this.isLoad = true
           this.getPageList()
         }
       }

@@ -10,13 +10,12 @@
         <li v-for="(item, index) in followList"> 
           <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
           <a class="c-att-t on" v-show="item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a>
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
+          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)" @click.stop="toAuthorPage($event, item)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
             <p class="c-att-fans">{{item.fansnum}}粉丝</p> 
             <p class="c-att-info">{{item.userdesc}}</p>
-          </div>
-           
+          </div>           
         </li>
       </ul>
       <div class="c-loading" v-show="!isLoad">
@@ -87,7 +86,7 @@ export default {
         }
       })
     },
-    getFollowMore (id, index) {
+    getFollowMore () {
       const self = this
       ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
         self.isNet = state.result
@@ -100,18 +99,18 @@ export default {
         } else {
           ApiBridge.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
             self.authInfo = user
-            self.getFollowMoreList(id, index)
+            self.getFollowMoreList()
           })
         }
       })
     },
-    getFollowMoreList (id) {
+    getFollowMoreList () {
       const self = this
       util.ajax({
         url: util.api.getUserPageByCategory,
         type: 'GET',
         data: {
-          userCategoryId: id,
+          userCategoryId: self.followId,
           size: 20,
           au: self.authInfo.userAuth || '',
           lastId: self.lastpageid || ''
@@ -180,7 +179,8 @@ export default {
       this.followList = []
       this.navIndex = index
       this.followId = id
-      this.getFollowMore(id, index)
+      this.lastpageid = ''
+      this.getFollowMore()
     },
     getMore: function (e) {
       const self = this
@@ -232,7 +232,7 @@ export default {
   top 0
   bottom 0
   width 5rem
-  background #f6f6f6
+  background #F8F8F8
   overflow-y scroll
 
 .c-att-bar

@@ -1,5 +1,5 @@
-import * as ApiBridge from '../mock/apibridge.mock.js'
-
+// import * as ApiBridge from '../mock/apibridge.mock.js'
+require('./kerkee.js')
 // export const api = {
 //   newListforvuser: 'api/newListforvuser',
 //   deleteForUserSelf: 'api/DeleteForUserSelf',

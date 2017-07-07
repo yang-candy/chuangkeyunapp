@@ -1,5 +1,7 @@
 import * as util from './util.js'
-import * as ApiBridge from '../mock/apibridge.mock.js'
+
+// import * as ApiBridge from '../mock/apibridge.mock.js'
+require('./kerkee.js')
 
 export function followToggle (e, type, user, info, target) {
   e.stopPropagation()

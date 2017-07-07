@@ -1,6 +1,6 @@
 <template>
   <p class="c-tab-ue">
-    <span class="c-zan" @click.stop="likeZan">
+    <span class="c-zan" @click.stop.once="likeZan">
       <span class="zan-icon" :class="{on: hasZan}"></span>
       <span class="c-add1" v-show="isAddZan">+1</span>
       <span class="c-num">{{news['praisenum']}}</span>
@@ -12,7 +12,8 @@
 </template>
 
 <script>
-import * as ApiBridge from '../mock/apibridge.mock.js'
+// import * as ApiBridge from '../mock/apibridge.mock.js'
+require('../api/kerkee.js')
 import * as util from '../api/util.js'
 
 export default{
@@ -69,9 +70,9 @@ export default{
     },
     likeZan: function () {
       let self = this
-      if (self.hasZan) {
-        return
-      }
+      // if (self.hasZan) {
+      //   return
+      // }
 
       if (!self.user.userId) {
         ApiBridge.callNative('ClientViewManager', 'login', {}, (res) => {

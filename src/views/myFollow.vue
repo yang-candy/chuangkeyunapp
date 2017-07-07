@@ -10,7 +10,7 @@
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
           <a class="c-att-t" v-show="isV && !item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
           <a class="c-att-t on" v-show="isV && item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a> 
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
+          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)" @click.stop="toAuthorPage($event, item)"> 
           
           <div class="c-att-des" v-if="!isV">
             <h3 class="c-att-title c-att-title-f">{{item.username}}</h3> 
@@ -331,7 +331,7 @@ export default {
 <style lang="stylus" scoped>
 .c-att-tit
   box-sizing border-box
-  background #f6f6f6
+  background #F8F8F8
   color #666
   font-size 0.75rem
   font-weight 400

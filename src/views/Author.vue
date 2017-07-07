@@ -101,7 +101,7 @@
           </li>
         </ul>
       </div>
-      <div class="c-loading" v-show="!isLoad">
+      <div class="c-loading" v-show="isLoad">
         <span class="loading-icon"></span> 
         <p>加载中...</p>
       </div>
@@ -134,8 +134,8 @@ export default {
       },
       isFirstRequest: false,
       isLoad: true,
-      isEmpty: true,
-      isAuthor: true,
+      isEmpty: false,
+      isAuthor: false,
       isAttention: 0,
       isloadmore: 0,
       pageType: 4,
@@ -213,7 +213,7 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          self.isLoad = true
+          self.isLoad = false
           ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
@@ -464,6 +464,7 @@ export default {
     },
     // tab切换
     tabClick: function (e, index) {
+      this.isLoad = true
       this.newsList = []
       this.lastpageid = ''
       this.defaultData.navIndex = index
@@ -508,19 +509,10 @@ export default {
       })
     },
     getMore: function () {
-      if (this.isLoad) {
-        // if (vm.data.tagListIndex !== 3) {
-        //   ApiBridge.callNative('ClientVideoManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   })
-        // }
-        // if (vm.data.tagListIndex !== 4) {
-        //   ApiBridge.callNative('ClientAudioManager', 'deleteById', {
-        //     mediaid: vm.data.mediaid,
-        //   })
-        // }
+      if (!this.isLoad) {
+        func.deleteMedia(this.media)
         if (this.isloadmore) {
-          this.isLoad = false
+          this.isLoad = true
           this.getPageInfo()
         }
       }
@@ -620,8 +612,8 @@ export default {
     line-height 32px
     margin auto
     margin-top: 15px;
-    border 1px solid #ccc
-    color #333
+    border 1px solid #2873ff
+    color #2873ff
     text-decoration none
     font-size .6rem
     &.on
