@@ -7,10 +7,10 @@
     </div>
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
-        <li v-for="(item, index) in followList"> 
+        <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
           <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
           <a class="c-att-t on" v-show="item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a>
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)" @click.stop="toAuthorPage($event, item)"> 
+          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
             <p class="c-att-fans">{{item.fansnum}}粉丝</p> 
@@ -32,8 +32,6 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
-require('../api/kerkee.js')
-// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'followMore',
@@ -70,7 +68,7 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
 
           if (res.result.length) {
             self.followBarList = res.result
@@ -79,8 +77,8 @@ export default {
           }
         },
         fail: function (status) {
-          ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-            ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+            util.callNative('ClientViewManager', 'showLoadingView')
             self.getNavBar()
           })
         }
@@ -88,16 +86,16 @@ export default {
     },
     getFollowMore () {
       const self = this
-      ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
+      util.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
         self.isNet = state.result
         if (!Number(self.isNet)) {
-          ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-            ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+            util.callNative('ClientViewManager', 'showLoadingView')
             self.isLoad = true
             self.getNavBar()
           })
         } else {
-          ApiBridge.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
+          util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
             self.authInfo = user
             self.getFollowMoreList()
           })
@@ -121,7 +119,7 @@ export default {
           self.isLoad = true
           self.isEmpty = !res.result.users.length
           self.isloadMore = res.result.loadMore
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.users.length) {
             self.lastpageid = res.result.lastId
             self.followList = [...self.followList, ...res.result.users]
@@ -146,7 +144,7 @@ export default {
       // 未登录
       if (!Number(self.authInfo.userId)) {
         try {
-          ApiBridge.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
@@ -198,7 +196,7 @@ export default {
         if (!Number(self.isNet)) {
           if (self.isLoad) {
             self.isLoad = false
-            ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
+            util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
               top: 'topNavTop'
             }, function () {
               self.isLoad = true

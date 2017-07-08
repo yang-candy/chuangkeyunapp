@@ -1,14 +1,5 @@
 // import * as ApiBridge from '../mock/apibridge.mock.js'
 require('./kerkee.js')
-// export const api = {
-//   newListforvuser: 'api/newListforvuser',
-//   deleteForUserSelf: 'api/DeleteForUserSelf',
-//   zanSet: 'api/zanSet',
-//   npnewlistfortagid: 'api/npnewlistfortagid',
-//   getCategoryList: 'api/getCategoryList',
-//   getUserPageByCategory: 'api/getUserPageByCategory',
-//   npgetvuserlist: 'api/npgetvuserlist'
-// }
 
 export const api = {
   newListforvuser: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npnewListforvuser.json',
@@ -19,6 +10,20 @@ export const api = {
   getUserPageByCategory: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/getUserPageByCategory.json',
   npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npgetvuserlist.json'
 }
+
+// export const api = {
+//   newListforvuser: 'api/newListforvuser',
+//   deleteForUserSelf: 'api/DeleteForUserSelf',
+//   zanSet: 'api/zanSet',
+//   npnewlistfortagid: 'api/npnewlistfortagid',
+//   getCategoryList: 'api/getCategoryList',
+//   getUserPageByCategory: 'api/getUserPageByCategory',
+//   npgetvuserlist: 'api/npgetvuserlist'
+// }
+
+export const callNative = ApiBridge.callNative
+
+export const log = ApiBridge.log
 
 export function ajax (options) {
   let _w = window

@@ -81,8 +81,6 @@ import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import zanAndComment from '../components/zanAndComment'
 import pullRefresh from '../components/pullRefresh'
-require('../api/kerkee.js')
-// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'tagName',
@@ -117,15 +115,15 @@ export default {
   mounted: function () {
     let self = this
 
-    ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
+    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
       // 未联网
       if (!Number(data.result)) {
-        ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-          ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+        util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+          util.callNative('ClientViewManager', 'showLoadingView')
           self.setTabBar()
         })
       } else {
-        ApiBridge.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
+        util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
           self.authInfo = user
           self.setTabBar()
         })
@@ -151,7 +149,7 @@ export default {
   methods: {
     setTabBar: function () {
       let self = this
-      ApiBridge.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
+      util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
         document.body.scrollTop = 0
         self.isLoad = true
         self.tabIndex = Number(index.index)
@@ -179,9 +177,12 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
           self.isLoad = false
           self.hasReFresh = false
+          if (!res.result) {
+            return
+          }
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
           }
@@ -203,8 +204,8 @@ export default {
           util.chejiahaoPv(pvMap)
         },
         fail: function (status) {
-          ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-            ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+            util.callNative('ClientViewManager', 'showLoadingView')
             self.getPageList()
           })
         }
@@ -215,7 +216,7 @@ export default {
       // 未登录
       if (!Number(self.authInfo.userId)) {
         try {
-          ApiBridge.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
@@ -269,7 +270,7 @@ export default {
           if ((self.media.mediaHeight + self.media.mediaY) < scrollTop || (self.media.mediaY - offsetHeight > scrollTop)) {
             self.media.mediaStatus = false
             if (self.media.mediaType === 3) {
-              ApiBridge.callNative('ClientVideoManager', 'deleteById', {
+              util.callNative('ClientVideoManager', 'deleteById', {
                 mediaid: self.media.mediaId
               })
             }

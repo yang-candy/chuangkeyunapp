@@ -1,8 +1,5 @@
 import * as util from './util.js'
 
-// import * as ApiBridge from '../mock/apibridge.mock.js'
-require('./kerkee.js')
-
 export function followToggle (e, type, user, info, target) {
   e.stopPropagation()
 
@@ -36,13 +33,13 @@ export function followToggle (e, type, user, info, target) {
           }
           if (!type) {
             target.isAttention = 1
-            ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            util.callNative('ClientViewManager', 'showToastView', {
               type: 1,
               msg: '关注成功'
             })
           } else {
             target.isAttention = 0
-            ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            util.callNative('ClientViewManager', 'showToastView', {
               type: 1,
               msg: '取消关注成功'
             })
@@ -58,7 +55,7 @@ export function followToggle (e, type, user, info, target) {
     let post = !type ? info : {
       userid: info.userId
     }
-    ApiBridge.callNative('ClientDataManager', url, post, function (result) {
+    util.callNative('ClientDataManager', url, post, function (result) {
       if (result.result) {
         if ((info.icon1) || (/author/.test(window.location.href))) {
           let icon1 = {
@@ -69,7 +66,7 @@ export function followToggle (e, type, user, info, target) {
         }
         if (!type) {
           target.isAttention = 1
-          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+          util.callNative('ClientViewManager', 'showToastView', {
             type: 1,
             msg: '关注成功'
           })
@@ -79,7 +76,7 @@ export function followToggle (e, type, user, info, target) {
           // }
         } else {
           target.isAttention = 0
-          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+          util.callNative('ClientViewManager', 'showToastView', {
             type: 1,
             msg: '取消关注成功'
           })
@@ -94,11 +91,11 @@ export function isCreatePlayer (fn) {
   if (util.mobileType() !== 'iOS') {
     fn && fn()
   } else {
-    ApiBridge.callNative('ClientDataManager', 'getWifiState', {}, function (state) {
+    util.callNative('ClientDataManager', 'getWifiState', {}, function (state) {
       if (state.result === '0') {
-        ApiBridge.callNative('ClientDataManager', 'getVideoShowAlertState', {}, function (data) {
+        util.callNative('ClientDataManager', 'getVideoShowAlertState', {}, function (data) {
           if (data.result === '1') {
-            ApiBridge.callNative('ClientToastManager', 'showAlertForVideoPlayAlertForNoWifi', {}, function (info) {
+            util.callNative('ClientToastManager', 'showAlertForVideoPlayAlertForNoWifi', {}, function (info) {
               if (info.result === '1') {
                 fn && fn()
               }
@@ -119,11 +116,11 @@ export function createMedia (e, news, media, pageType) {
   if (news.status !== 0 && news.status !== 1) {
     return
   }
-  ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
+  util.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
     let isNet = state.result
     // 未联网
     if (!Number(isNet)) {
-      ApiBridge.callNative('ClientViewManager', 'showToastView', {
+      util.callNative('ClientViewManager', 'showToastView', {
         type: 0,
         msg: '当前网络不可用，请检查网络设置'
       })
@@ -145,7 +142,7 @@ export function createMedia (e, news, media, pageType) {
               pagetype: pageType || 3
             }
           }
-          ApiBridge.callNative('ClientVideoManager', 'createById', postData)
+          util.callNative('ClientVideoManager', 'createById', postData)
         }
         if (media.mediaType === 4) {
           let postData = {
@@ -164,7 +161,7 @@ export function createMedia (e, news, media, pageType) {
               pagetype: pageType || 3
             }
           }
-          ApiBridge.callNative('ClientAudioManager', 'createById', postData)
+          util.callNative('ClientAudioManager', 'createById', postData)
         }
       })
     }
@@ -174,12 +171,12 @@ export function createMedia (e, news, media, pageType) {
 // 销毁音频或视频
 export function deleteMedia (media) {
   if (media.mediaType === 3) {
-    ApiBridge.callNative('ClientVideoManager', 'deleteById', {
+    util.callNative('ClientVideoManager', 'deleteById', {
       mediaid: media.mediaId
     })
   }
   if (media.mediaType === 4) {
-    ApiBridge.callNative('ClientAudioManager', 'deleteById', {
+    util.callNative('ClientAudioManager', 'deleteById', {
       mediaid: media.mediaId
     })
   }
@@ -194,7 +191,7 @@ export function deleteMediaWatch (media) {
       if ((media.mediaHeight + media.mediaY) < scrollTop || (media.mediaY - offsetHeight > scrollTop)) {
         media.mediaStatus = false
         if (media.mediaType === 3) {
-          ApiBridge.callNative('ClientVideoManager', 'deleteById', {
+          util.callNative('ClientVideoManager', 'deleteById', {
             mediaid: media.mediaId
           })
         }
@@ -213,7 +210,7 @@ export function scaleQingImg (e, news) {
     map.picurl = item
     pics.push(map)
   })
-  ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+  util.callNative('ClientViewManager', 'pushViewController', {
     pagetype: 9,
     animationtype: 1,
     set: {
@@ -243,7 +240,7 @@ export function scaleQingImg (e, news) {
 export function toAuthorPage (e, userId, loginId) {
   let pageType = (loginId === userId) ? 5 : 7
 
-  ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+  util.callNative('ClientViewManager', 'pushViewController', {
     pagetype: pageType,
     animationtype: 1,
     set: {
@@ -288,7 +285,7 @@ export function author2 (e, self) {
   //   }
 
   //   //单独拿出来vivo7使用
-  //   ApiBridge.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
+  //   util.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
   //     var pvMap = {
   //       "eventid":  'chejiahao_cancelorattention_click',
   //       "pagename": 'chejiahao_cancelorattention',
@@ -333,7 +330,7 @@ export function author2 (e, self) {
   //             if (!$type) {
   //               $($followTarget).addClass('on');
   //               $($followTarget).html('已关注')
-  //               ApiBridge.callNative('ClientViewManager', 'showToastView', {
+  //               util.callNative('ClientViewManager', 'showToastView', {
   //                 type: 1,
   //                 msg: '关注成功'
   //               });
@@ -344,7 +341,7 @@ export function author2 (e, self) {
   //             } else {
   //               $($followTarget).removeClass('on');
   //               $($followTarget).html('+  关注')
-  //               ApiBridge.callNative('ClientViewManager', 'showToastView', {
+  //               util.callNative('ClientViewManager', 'showToastView', {
   //                 type: 1,
   //                 msg: '取消关注成功'
   //               })
@@ -360,7 +357,7 @@ export function author2 (e, self) {
   //         var $url = 'deletLocalDataForFollow';
   //       }
   //       var post = !$type ? $info : { userid: $info.userid };
-  //       ApiBridge.callNative('ClientDataManager', $url, post, function(result) {
+  //       util.callNative('ClientDataManager', $url, post, function(result) {
   //         if (!!result.result) {
   //           if((!!$info.icon1) || (/author/.test(window.location.href))){
   //             var icon1 = {
@@ -376,7 +373,7 @@ export function author2 (e, self) {
   //           if (!$type) {
   //             $($followTarget).addClass('on');
   //             $($followTarget).html('已关注')
-  //             ApiBridge.callNative('ClientViewManager', 'showToastView', {
+  //             util.callNative('ClientViewManager', 'showToastView', {
   //               type: 1,
   //               msg: '关注成功'
   //             })
@@ -387,7 +384,7 @@ export function author2 (e, self) {
   //           } else {
   //             $($followTarget).removeClass('on');
   //             $($followTarget).html('+  关注')
-  //             ApiBridge.callNative('ClientViewManager', 'showToastView', {
+  //             util.callNative('ClientViewManager', 'showToastView', {
   //               type: 1,
   //               msg: '取消关注成功'
   //             })
@@ -400,7 +397,7 @@ export function author2 (e, self) {
   //   return;
   // }
 
-  // ApiBridge.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
+  // util.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
   //   // if(!!vm.data.isClicked){
   //   //   return;
   //   // }
@@ -433,7 +430,7 @@ export function toArticleDetail (e, news) {
   //     }
   //   };
   //   vm.chejiahaoClick(pvMap);
-  //   ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+  //   util.callNative('ClientViewManager', 'pushViewController', {
   //     pagetype: 2,
   //     animationtype: 2,
   //     param: {
@@ -460,7 +457,7 @@ export function toArticleDetail (e, news) {
     }
   }
   util.chejiahaoPv(pvMap)
-  ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+  util.callNative('ClientViewManager', 'pushViewController', {
     pagetype: 2,
     animationtype: 2,
     param: {

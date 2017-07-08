@@ -3,8 +3,13 @@ export function callNative (manage, event, map, fn) {
   switch (event) {
     case 'getUserInfo':
       data = {
-        userId: '11111',
-        userAuth: '111'
+        userId: '39144542',
+        userPic: '',
+        userName: 'Abc_wj',
+        isAllowPost: '1',
+        userAgent: 'iPhone\t10.3.2\tautohome\t8.2.5\tiPhone',
+        userAuth: '080cba10c8164b0ab813829c23b7bcd902554c5e',
+        isVUser: '0'
       }
       break
     case 'login':

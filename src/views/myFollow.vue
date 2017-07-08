@@ -6,11 +6,11 @@
       </a>
       <h3 class="c-att-tit" v-else>推荐作者</h3>
       <ul class="c-att-ul att-more">
-        <li v-for="(item, index) in followList">
+        <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)">
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
           <a class="c-att-t" v-show="isV && !item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
           <a class="c-att-t on" v-show="isV && item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a> 
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)" @click.stop="toAuthorPage($event, item)"> 
+          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
           <div class="c-att-des" v-if="!isV">
             <h3 class="c-att-title c-att-title-f">{{item.username}}</h3> 
@@ -34,8 +34,6 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
-require('../api/kerkee.js')
-// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'myFollow',
@@ -80,13 +78,13 @@ export default {
     init () {
       const self = this
       // 判断是否联网
-      ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
         this.isNet = state.result
         // 未联网
         if (!Number(this.isNet)) {
           self.getLocalDataNoNet()
         } else {
-          ApiBridge.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+          util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
             self.authInfo = user
             if (Number(self.authInfo.userId)) {
               // 已登录
@@ -105,7 +103,7 @@ export default {
     getLocalDataNoNet () {
       // 未联网
       let self = this
-      ApiBridge.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
+      util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
         self.localData = follow.result
         if (self.localData.length) {
           self.isV = false
@@ -119,8 +117,8 @@ export default {
             }
           })
         } else {
-          ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-            ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+            util.callNative('ClientViewManager', 'showLoadingView')
             self.init()
           })
         }
@@ -129,7 +127,7 @@ export default {
     // 有网未登录
     getLocalDataNet () {
       let self = this
-      ApiBridge.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
+      util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
         self.localData = follow.result
         // 本地数据有
         if (self.localData.length) {
@@ -173,14 +171,12 @@ export default {
         data: postData,
         dataType: 'json',
         success: function (res, xml) {
-          document.body.scrollTop = 0
           res = JSON.parse(res)
           self.isLoad = true
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
 
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastpageid || ''
-          // res.result.vuserlist.length = 0
           if (res.result.vuserlist.length) {
             self.isV = false
             self.followList = [...self.followList, ...res.result.vuserlist]
@@ -211,8 +207,8 @@ export default {
           if (self.localData.length) {
             self.isV = false
           } else {
-            ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-              ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+            util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+              util.callNative('ClientViewManager', 'showLoadingView')
               self.init()
             })
           }
@@ -233,7 +229,7 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
           self.isLoad = true
           if (res.result.vuserlist.length) {
             self.followList = res.result.vuserlist
@@ -243,8 +239,8 @@ export default {
           }
         },
         fail: function (status) {
-          ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-            ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+            util.callNative('ClientViewManager', 'showLoadingView')
             self.init()
           })
         }
@@ -256,7 +252,7 @@ export default {
         return
       }
       if (!Number(this.isNet)) {
-        ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
+        util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
           top: 'topNavTop'
         })
         return
@@ -315,7 +311,7 @@ export default {
       func.toAuthorPage(e, news.userid, this.authInfo.userId)
     },
     toFollowMore () {
-      ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+      util.callNative('ClientViewManager', 'pushViewController', {
         pagetype: 7,
         animationtype: 1,
         set: {

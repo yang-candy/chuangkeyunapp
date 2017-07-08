@@ -116,8 +116,6 @@
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import zanAndComment from '../components/zanAndComment'
-require('../api/kerkee.js')
-// import * as ApiBridge from '../mock/apibridge.mock.js'
 
 export default {
   name: 'author',
@@ -156,15 +154,15 @@ export default {
   mounted: function () {
     let self = this
 
-    ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
+    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
       // 未联网
       if (!Number(data.result)) {
-        ApiBridge.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-          ApiBridge.callNative('ClientViewManager', 'showLoadingView')
+        util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+          util.callNative('ClientViewManager', 'showLoadingView')
           self.getPageInfo()
         })
       } else {
-        ApiBridge.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
+        util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
           self.authInfo = user
           self.isAuthor = self.urlUserId === self.authInfo.userId
           self.pageType = self.isAuthor ? 4 : 5
@@ -214,7 +212,7 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           self.isLoad = false
-          ApiBridge.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
           }
@@ -256,7 +254,7 @@ export default {
       // 未登录
       if (!Number(self.authInfo.userId)) {
         try {
-          ApiBridge.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
@@ -272,7 +270,7 @@ export default {
     // 点击删除某条信息
     deleteNewModal: function (item, index, e) {
       let self = this
-      ApiBridge.callNative('ClientViewManager', 'showDrawerView', {
+      util.callNative('ClientViewManager', 'showDrawerView', {
         names: ['删除']
       }, (result) => {
         if (result.result === 0) {
@@ -318,7 +316,7 @@ export default {
         }
       }
 
-      ApiBridge.callNative('ClientImageManager', 'getImageWithBlur', opt, (result) => {
+      util.callNative('ClientImageManager', 'getImageWithBlur', opt, (result) => {
         self.userInfo.bgimg = 'data:image/jpeg;base64,' + result.result
       })
     },
@@ -385,7 +383,7 @@ export default {
           }
         }
 
-        ApiBridge.callNative('ClientNavigationManager', 'setRightIcon', {
+        util.callNative('ClientNavigationManager', 'setRightIcon', {
           righticons: icon
         }, function (result) {
           if (result.result === 'icon2') {
@@ -401,7 +399,7 @@ export default {
               sharepositiontype: 44,
               objectid: self.authInfo.userId
             }
-            ApiBridge.callNative('ClientShareManager', 'shareAction', opt)
+            util.callNative('ClientShareManager', 'shareAction', opt)
           } else {
             let type = self.isAttention ? 1 : 0
             let info = {
@@ -416,24 +414,24 @@ export default {
       }
     },
     setNavBar: function (info) {
-      ApiBridge.callNative('ClientNavigationManager', 'setNavBackIcon', {
+      util.callNative('ClientNavigationManager', 'setNavBackIcon', {
         navigationbacktype: info.navigationbacktype || 5
       })
 
-      ApiBridge.callNative('ClientNavigationManager', 'setNavCircleIcon', {
+      util.callNative('ClientNavigationManager', 'setNavCircleIcon', {
         imgurl: info.imgurl || ''
       })
 
-      ApiBridge.callNative('ClientNavigationManager', 'setNavTitle', {
+      util.callNative('ClientNavigationManager', 'setNavTitle', {
         title: info.title || ''
       })
 
-      ApiBridge.callNative('ClientNavigationManager', 'setNavAlpha', {
+      util.callNative('ClientNavigationManager', 'setNavAlpha', {
         alpha: info.alpha || 0
       })
 
       let statusBarStyle = (info.statusBarStyle === 0) ? 0 : 1
-      ApiBridge.callNative('ClientViewManager', 'setStatusBarStyle', {
+      util.callNative('ClientViewManager', 'setStatusBarStyle', {
         statusBarStyle: statusBarStyle
       })
 
@@ -500,7 +498,7 @@ export default {
           if ((self.media.mediaHeight + self.media.mediaY) < scrollTop || (self.media.mediaY - offsetHeight > scrollTop)) {
             self.media.mediaStatus = false
             if (self.media.mediaType === 3) {
-              ApiBridge.callNative('ClientVideoManager', 'deleteById', {
+              util.callNative('ClientVideoManager', 'deleteById', {
                 mediaid: self.media.mediaId
               })
             }
@@ -579,6 +577,14 @@ export default {
       right 0
       img
         width 100%
+        border 1px solid rgba(238,238,238,.3)
+        border-radius 50%
+        background url(../assets/pic_head.png) no-repeat
+        background-color #fff
+        background-size 100% 100%
+        background-clip padding-box
+        overflow hidden
+        
   .c-author-intro
     padding 26px 20px 15px
     text-align center

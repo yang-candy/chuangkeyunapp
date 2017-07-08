@@ -12,8 +12,6 @@
 </template>
 
 <script>
-// import * as ApiBridge from '../mock/apibridge.mock.js'
-require('../api/kerkee.js')
 import * as util from '../api/util.js'
 
 export default{
@@ -55,7 +53,7 @@ export default{
         }
       }
       util.chejiahaoPv(pvMap)
-      ApiBridge.callNative('ClientViewManager', 'pushViewController', {
+      util.callNative('ClientViewManager', 'pushViewController', {
         pagetype: 2,
         animationtype: 2,
         set: {
@@ -75,7 +73,7 @@ export default{
       // }
 
       if (!self.user.userId) {
-        ApiBridge.callNative('ClientViewManager', 'login', {}, (res) => {
+        util.callNative('ClientViewManager', 'login', {}, (res) => {
           if (res.result === 1) {
             self.zanHandler(self)
           }
@@ -99,7 +97,7 @@ export default{
       self.likesLocal.push(self.news.newsid)
       self.setLs('tagliked', self.likesLocal)
 
-      ApiBridge.callNative('ClientDataManager', 'getSystemConstant', {}, function (follow) {
+      util.callNative('ClientDataManager', 'getSystemConstant', {}, function (follow) {
         util.ajax({
           url: util.api.zanSet,
           type: 'POST',

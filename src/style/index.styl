@@ -127,12 +127,14 @@ li
     width 1.5rem
     height 1.5rem
     margin-right .5rem
-    border-radius 50%
     vertical-align -.6rem
+    border 1px solid rgba(238,238,238,.3)
+    border-radius 50%
     background url(./assets/pic_head.png) no-repeat
-    background-size 100% 100%
     background-color #fff
-    border 1px solid rgba(238, 238, 238, 0.3)
+    background-size 100% 100%
+    background-clip padding-box
+    overflow hidden  
   > p
     display inline-block
     white-space nowrap
@@ -183,6 +185,8 @@ li
 .c-media-content
   img
     width 100%
+    background url(./assets/default.jpg)center no-repeat
+    background-size 100% 100%
 
 .c-media-long
   overflow hidden
