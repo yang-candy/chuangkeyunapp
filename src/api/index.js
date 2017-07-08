@@ -1,34 +1,44 @@
 import * as util from './util.js'
 
-export function followToggle (e, type, user, info, target) {
-  e.stopPropagation()
+export function followToggle (e, type, info, icon1, target) {
+  var pvMap = {
+    'eventid': 'chejiahao_cancelorattention_click',
+    'pagename': 'chejiahao_cancelorattention',
+    'reportjson': {
+      'userid#1': info.loginId || 0, // loginId
+      'typeid#2': !type ? '1' : '2',
+      'userid2#3': info.userId || 0,
+      'objecttypeid#4': info.objecttypeid || ''
+    }
+  }
+  util.chejiahaoPv(pvMap)
 
-  if (Number(user.userId)) {
-    if (!type) {
-      var $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-    } else {
-      $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+  if (Number(info.loginId)) {
+    let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
+    if (type) {
+      url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
     }
     util.ajax({
-      url: $url,
+      url: url,
       type: 'POST',
       isJson: true,
       data: {
-        userId: user.userId,
+        userId: info.userId,
         _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-        pcpopclub: user.userAuth,
-        autohomeua: user.userAgent
+        pcpopclub: info.userAuth,
+        autohomeua: info.userAgent
       },
       dataType: 'json',
       success: function (res, xml) {
         res = JSON.parse(res)
-        res.result = '1'
         if (res.result) {
-          if ((info.icon1) || (/author/.test(window.location.href))) {
-            let icon1 = {
+          if ((icon1) || (/author/.test(window.location.href))) {
+            target.icon1 = {
               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
               icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
             }
+
+            // target = icon1
             target.setRightIcon(icon1)
           }
           if (!type) {
@@ -44,6 +54,11 @@ export function followToggle (e, type, user, info, target) {
               msg: '取消关注成功'
             })
           }
+          // data = {
+          //   icon1: target.icon1,
+          //   isAttention: target.isAttention
+          // }
+          // target.$emit('on-follow', data)
         }
       },
       fail: function (status) {
@@ -52,17 +67,28 @@ export function followToggle (e, type, user, info, target) {
     })
   } else {
     let url = !type ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
-    let post = !type ? info : {
+    let post = {
       userid: info.userId
     }
+    if (!type) {
+      post = {
+        imgurl: info.imgUrl || '',
+        time: info.time || '',
+        userid: info.userId || '',
+        username: info.userName || '',
+        title: info.title || '',
+        description: info.description || ''
+      }
+    }
+
     util.callNative('ClientDataManager', url, post, function (result) {
       if (result.result) {
-        if ((info.icon1) || (/author/.test(window.location.href))) {
-          let icon1 = {
+        if ((icon1) || (/author/.test(window.location.href))) {
+          target.icon1 = {
             icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
-          target.setRightIcon(icon1)
+          // target.setRightIcon(icon1)
         }
         if (!type) {
           target.isAttention = 1
@@ -70,10 +96,6 @@ export function followToggle (e, type, user, info, target) {
             type: 1,
             msg: '关注成功'
           })
-          // 判断流
-          // if (/tag-name/.test(window.location.href)) {
-          //   target.remove();
-          // }
         } else {
           target.isAttention = 0
           util.callNative('ClientViewManager', 'showToastView', {
@@ -81,6 +103,11 @@ export function followToggle (e, type, user, info, target) {
             msg: '取消关注成功'
           })
         }
+        // data = {
+        //   icon1: this.icon1,
+        //   isAttention: this.isAttention
+        // }
+        // this.$emit('on-follow', data)
       }
     })
   }
@@ -268,144 +295,120 @@ export function toAuthorPage (e, userId, loginId) {
 }
 
 export function author2 (e, self) {
-  // e.stopPropagation()
-
-  // var $followTarget = e.target
-  // var $curTarget = $(e.currentTarget)
-
-  // if ($followTarget.tagName == 'A') {
-  //   var $type = $($followTarget).hasClass('on') ? 1 : 0;
-  //   var $info = {
-  //     imgurl: $($followTarget).attr('userpic'),
-  //     time: $($followTarget).attr('usertime') || '',
-  //     userid: $($followTarget).attr('userid'),
-  //     title: $($followTarget).attr('title'),
-  //     description: $($followTarget).attr('userdesc') || '',
-  //     username: $($followTarget).attr('username')
-  //   }
-
-  //   //单独拿出来vivo7使用
-  //   util.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
+  // followToggle (e) {
   //     var pvMap = {
-  //       "eventid":  'chejiahao_cancelorattention_click',
-  //       "pagename": 'chejiahao_cancelorattention',
-  //       "reportjson": {
-  //         "userid#1": user.userId || '',
-  //         "typeid#2": !$type ? '1': '2',
-  //         "userid2#3": $curTarget.attr('userid') || '',
-  //         "objecttypeid#4": $curTarget.attr('objecttypeid') || ''
+  //       'eventid':  'chejiahao_cancelorattention_click',
+  //       'pagename': 'chejiahao_cancelorattention',
+  //       'reportjson': {
+  //         'userid#1': info.loginId || 0, // loginId
+  //         'typeid#2': !type ? '1': '2',
+  //         'userid2#3': info.userId || 0,
+  //         'objecttypeid#4': info.objecttypeid || ''
   //       }
-  //     };
-  //     vm.chejiahaoClick(pvMap);
+  //     }
+  //     util.chejiahaoPv(pvMap)
 
-  //     //已登录
-  //     if (!!Number(user.userId)) {
-  //       if (!$type) {
-  //         var $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow';
+  //     if (Number(info.loginId)) {
+  //       if (!type) {
+  //         const $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
   //       } else {
-  //         var $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow';
+  //         $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
   //       }
-  //       vm.ajax({
+  //       util.ajax({
   //         url: $url,
-  //         type: "POST",
+  //         type: 'POST',
   //         isJson: true,
   //         data: {
-  //           userId: $($followTarget).attr('userid'),
-  //           _appid: vm.mobileType() == 'iOS' ? 'app' : 'app_android',
-  //           pcpopclub: user.userAuth,
-  //           autohomeua: user.userAgent
+  //           userId: info.userId,
+  //           _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
+  //           pcpopclub: info.userAuth,
+  //           autohomeua: info.userAgent
   //         },
-  //         dataType: "json",
-  //         success: function(res, xml) {
-  //           res = JSON.parse(res);
-  //           if (!!res.result) {
-  //             if((!!$info.icon1) || (/author/.test(window.location.href))){
-  //               var icon1 = {
-  //                 icon1: !$type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-  //                 icon1_p: !$type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p',
-  //               };
-  //               vm.setRightIcon(icon1);
+  //         dataType: 'json',
+  //         success: function (res, xml) {
+  //           res = JSON.parse(res)
+  //           res.result = '1'
+  //           if (res.result) {
+  //             if ((icon1) || (/author/.test(window.location.href))) {
+  //               this.icon1 = {
+  //                 icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
+  //                 icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
+  //               }
+  //               // target.setRightIcon(icon1)
   //             }
-
-  //             if (!$type) {
-  //               $($followTarget).addClass('on');
-  //               $($followTarget).html('已关注')
+  //             if (!type) {
+  //               this.isAttention = 1
   //               util.callNative('ClientViewManager', 'showToastView', {
   //                 type: 1,
   //                 msg: '关注成功'
-  //               });
-  //               //判断流
-  //               if(/tag-name/.test(window.location.href)){
-  //                 $($followTarget).remove();
-  //               }
+  //               })
   //             } else {
-  //               $($followTarget).removeClass('on');
-  //               $($followTarget).html('+  关注')
+  //               this.isAttention = 0
   //               util.callNative('ClientViewManager', 'showToastView', {
   //                 type: 1,
   //                 msg: '取消关注成功'
   //               })
   //             }
+
+  //             data = {
+  //               icon1: this.icon1,
+  //               isAttention: this.isAttention
+  //             }
+  //             this.$emit('on-follow', data)
   //           }
   //         },
-  //         fail: function(status) {}
-  //       });
+  //         fail: function (status) {
+  //           console.log('失败，请重试')
+  //         }
+  //       })
   //     } else {
-  //       if (!$type) {
-  //         var $url = 'addLocalDataForFollow';
-  //       } else {
-  //         var $url = 'deletLocalDataForFollow';
+  //       let url = !type ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+  //       let post = {
+  //         userid: info.userId
   //       }
-  //       var post = !$type ? $info : { userid: $info.userid };
-  //       util.callNative('ClientDataManager', $url, post, function(result) {
-  //         if (!!result.result) {
-  //           if((!!$info.icon1) || (/author/.test(window.location.href))){
-  //             var icon1 = {
-  //               icon1: !$type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-  //               icon1_p: !$type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p',
-  //             };
+  //       if (!type) {
+  //         post = {
+  //           imgurl: info.imgUrl || '',
+  //           time: info.time || '',
+  //           userid: info.userId || '',
+  //           username: info.userName || '',
+  //           title: info.title || '',
+  //           description: info.description || ''
+  //         }
+  //       }
 
-  //             vm.setRightIcon(icon1);
-
-  //             //target = !!$('.c-att-href').length ? $('.c-att-href') : $('.c-auth-follow');
+  //       util.callNative('ClientDataManager', url, post, function (result) {
+  //         if (result.result) {
+  //           if ((icon1) || (/author/.test(window.location.href))) {
+  //             this.icon1 = {
+  //               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
+  //               icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
+  //             }
+  //             // target.setRightIcon(icon1)
   //           }
-
-  //           if (!$type) {
-  //             $($followTarget).addClass('on');
-  //             $($followTarget).html('已关注')
+  //           if (!type) {
+  //             this.isAttention = 1
   //             util.callNative('ClientViewManager', 'showToastView', {
   //               type: 1,
   //               msg: '关注成功'
   //             })
-  //             //判断流
-  //             if(/tag-name/.test(window.location.href)){
-  //               $($followTarget).remove();
-  //             }
   //           } else {
-  //             $($followTarget).removeClass('on');
-  //             $($followTarget).html('+  关注')
+  //             this.isAttention = 0
   //             util.callNative('ClientViewManager', 'showToastView', {
   //               type: 1,
   //               msg: '取消关注成功'
   //             })
   //           }
+
+  //           data = {
+  //             icon1: this.icon1,
+  //             isAttention: this.isAttention
+  //           }
+  //           this.$emit('on-follow', data)
   //         }
   //       })
   //     }
-  //   })
-
-  //   return;
-  // }
-
-  // util.callNative("ClientDataManager", "getUserInfo", {}, function(user) {
-  //   // if(!!vm.data.isClicked){
-  //   //   return;
-  //   // }
-  //   // vm.data.isClicked = true;
-
-  //   let pageType = (self.authInfo.userId === userId) ? 5 : 7
-  //   vm.toAuthor(pagetype, $curTarget);
-  // })
+  //   }
 }
 
 export function toArticleDetail (e, news) {

@@ -11,8 +11,7 @@
                   <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
                   <p class="c-auth-title">{{item.username}}</p>
                 </div>
-                
-                <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
+                <follow-toggle :noAttention="true" :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
               </div>
               <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg !== 0">
                 {{item.mediatype === 2 ? item.description : item.title}}
@@ -81,12 +80,14 @@ import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import zanAndComment from '../components/zanAndComment'
 import pullRefresh from '../components/pullRefresh'
+import followToggle from '../components/followToggle'
 
 export default {
   name: 'tagName',
   components: {
     zanAndComment,
-    pullRefresh
+    pullRefresh,
+    followToggle
   },
   data: function () {
     return {
@@ -150,6 +151,7 @@ export default {
     setTabBar: function () {
       let self = this
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
+        util.callNative('ClientViewManager', 'showLoadingView')
         document.body.scrollTop = 0
         self.isLoad = true
         self.tabIndex = Number(index.index)
@@ -230,15 +232,6 @@ export default {
           })
         } catch (e) {}
       }
-    },
-    followToggle: function (e, type, item, info) {
-      let self = this
-      info = {
-        userId: item.userid,
-        username: item.username,
-        imgurl: item.userpic
-      }
-      func.followToggle(e, type, self.authInfo, info, self)
     },
     resize: function (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'

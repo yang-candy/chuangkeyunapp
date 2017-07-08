@@ -8,8 +8,7 @@
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
-          <a class="c-att-t" v-show="!item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
-          <a class="c-att-t on" v-show="item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a>
+          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
           <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
@@ -18,7 +17,7 @@
           </div>           
         </li>
       </ul>
-      <div class="c-loading" v-show="!isLoad">
+      <div class="c-loading" v-show="isLoad">
         <span class="loading-icon"></span> 
         <p>加载中...</p>
       </div>
@@ -32,9 +31,13 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
+import followToggle from '../components/followToggle'
 
 export default {
   name: 'followMore',
+  components: {
+    followToggle
+  },
   data: function () {
     return {
       defaultData: {
@@ -42,7 +45,7 @@ export default {
         headImg: require('../assets/pic_head.png')
       },
       navIndex: 0,
-      isLoad: true,
+      isLoad: false,
       isEmpty: false,
       isNet: true,
       isloadMore: false,
@@ -116,7 +119,7 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          self.isLoad = true
+          self.isLoad = false
           self.isEmpty = !res.result.users.length
           self.isloadMore = res.result.loadMore
           util.callNative('ClientViewManager', 'hideLoadingView')
@@ -159,15 +162,6 @@ export default {
         } catch (e) {}
       }
     },
-    followToggle: function (e, type, item, info) {
-      let self = this
-      info = {
-        userId: item.userid,
-        username: item.username,
-        imgurl: item.userpic
-      }
-      func.followToggle(e, type, self.authInfo, info, self)
-    },
     loadError: function (e) {
       e.target.onerror = null
       e.target.src = ''
@@ -178,6 +172,7 @@ export default {
       this.navIndex = index
       this.followId = id
       this.lastpageid = ''
+      util.callNative('ClientViewManager', 'showLoadingView')
       this.getFollowMore()
     },
     getMore: function (e) {
@@ -194,21 +189,21 @@ export default {
       }
       if ($height + $scrollTop >= $scrollHeight) {
         if (!Number(self.isNet)) {
-          if (self.isLoad) {
-            self.isLoad = false
+          if (!self.isLoad) {
+            self.isLoad = true
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
               top: 'topNavTop'
             }, function () {
-              self.isLoad = true
+              self.isLoad = false
             })
           }
         } else {
-          if (self.isLoad) {
-            self.isLoad = false
+          if (!self.isLoad) {
             if (self.isloadMore) {
+              self.isLoad = true
               self.getFollowMoreList(self.followId, self.navIndex)
             } else {
-              self.isLoad = true
+              self.isLoad = false
             }
           }
         }

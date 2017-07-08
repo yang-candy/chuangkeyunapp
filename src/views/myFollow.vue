@@ -8,8 +8,9 @@
       <ul class="c-att-ul att-more">
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)">
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
-          <a class="c-att-t" v-show="isV && !item.isattention" @click.stop="followToggle($event, 0, item)"><span>＋</span> 关注</a>
-          <a class="c-att-t on" v-show="isV && item.isattention" @click.stop="followToggle($event, 1, item)">已关注</a> 
+
+          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo" v-if="isV"></follow-toggle>
+          
           <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
           <div class="c-att-des" v-if="!isV">
@@ -34,9 +35,13 @@
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
+import followToggle from '../components/followToggle'
 
 export default {
   name: 'myFollow',
+  components: {
+    followToggle
+  },
   data: function () {
     return {
       defaultData: {
@@ -172,17 +177,18 @@ export default {
         dataType: 'json',
         success: function (res, xml) {
           res = JSON.parse(res)
-          self.isLoad = true
           util.callNative('ClientViewManager', 'hideLoadingView')
 
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastpageid || ''
           if (res.result.vuserlist.length) {
             self.isV = false
+            self.isLoad = false
             self.followList = [...self.followList, ...res.result.vuserlist]
           } else {
             // 已登录本地数据没有
             if (opt.au) {
+              self.isLoad = true
               self.getV(opt.au)
             } else {
               self.isEmpty = true
@@ -201,9 +207,6 @@ export default {
           util.chejiahaoPv(pvMap)
         },
         fail: function (status) {
-          // $('.js-follow-more').hide()
-          // $('.js-follow-v').hide()
-          // $('.c-loading').hide()
           if (self.localData.length) {
             self.isV = false
           } else {
@@ -230,7 +233,7 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
-          self.isLoad = true
+          self.isLoad = false
           if (res.result.vuserlist.length) {
             self.followList = res.result.vuserlist
             self.isV = true
@@ -286,22 +289,13 @@ export default {
     },
     // 本地上拉翻页
     localNextPage () {
+      this.isLoad = true
       this.localIndex++
       this.localData.map(function (i, v) {
         if (i < ((this.localIndex + 1) * 19) && (i >= this.localIndex * 19)) {
           this.followList.push(v)
         }
       })
-      this.isLoad = true
-    },
-    followToggle (e, type, item, info) {
-      let self = this
-      info = {
-        userId: item.userid,
-        username: item.username,
-        imgurl: item.userpic
-      }
-      func.followToggle(e, type, self.authInfo, info, self)
     },
     loadError (e) {
       e.target.onerror = null

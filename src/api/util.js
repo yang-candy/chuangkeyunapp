@@ -1,6 +1,9 @@
 // import * as ApiBridge from '../mock/apibridge.mock.js'
 require('./kerkee.js')
 
+export const callNative = ApiBridge.callNative
+export const log = ApiBridge.log
+
 export const api = {
   newListforvuser: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npnewListforvuser.json',
   deleteForUserSelf: 'https://chejiahaoopen.api.autohome.com.cn/OpenInfoService.svc/DeleteForUserSelf',
@@ -20,10 +23,6 @@ export const api = {
 //   getUserPageByCategory: 'api/getUserPageByCategory',
 //   npgetvuserlist: 'api/npgetvuserlist'
 // }
-
-export const callNative = ApiBridge.callNative
-
-export const log = ApiBridge.log
 
 export function ajax (options) {
   let _w = window

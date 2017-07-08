@@ -17,8 +17,8 @@
             <span class="c-auth-work">{{userInfo.publishcount}}作品</span>
           </p>
           <p v-if="!isAuthor">
-            <a href="javascript:;" class="c-auth-follow" v-if="!isAttention" @click="followToggle($event, 0)"><span>＋</span> 关注</a>
-            <a href="javascript:;" class="c-auth-follow on" v-if="isAttention" @click="followToggle($event, 1)">已关注</a>
+            <a href="javascript:;" class="c-auth-follow" v-show="!isAttention" @click="followToggle($event, 0)"><span>＋</span> 关注</a>
+            <a href="javascript:;" class="c-auth-follow on" v-show="isAttention" @click="followToggle($event, 1)">已关注</a>
           </p>
           
         </div>
@@ -139,6 +139,10 @@ export default {
       pageType: 4,
       lastpageid: '',
       urlUserId: util.getParam('userId'),
+      icon1: {
+        icon1: '',
+        icon1_p: ''
+      },
       authInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
@@ -212,7 +216,9 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           self.isLoad = false
-          util.callNative('ClientViewManager', 'hideLoadingView')
+          setTimeout(function () {
+            util.callNative('ClientViewManager', 'hideLoadingView')
+          }, 0)
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
           }
@@ -227,7 +233,7 @@ export default {
             self.setImgWithBlur()
             self.navBarWatch()
           }
-          self.isEmpty = !res.result.newslist.length
+          self.isEmpty = !self.newsList.length
           self.isAttention = res.result.userinfo.isattention
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastid || ''
@@ -331,7 +337,7 @@ export default {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = self.$refs.authTitle.clientHeight
         let $offsetTop = self.$refs.authTitle.offsetTop
-        let icon1 = {
+        self.icon1 = {
           icon1: '',
           icon1_p: ''
         }
@@ -349,7 +355,7 @@ export default {
           }
 
           let type = self.isAttention ? 1 : 0
-          icon1 = {
+          self.icon1 = {
             icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
@@ -365,23 +371,26 @@ export default {
             self.setNavBar(info)
           }
         }
-        self.setRightIcon(icon1)
+        self.setRightIcon()
       })
     },
     setRightIcon: function (icon, flag) {
       let self = this
       let shareInfo = self.shareInfo
       if (!self.isAuthor) {
-        let $scrollTop = document.body.scrollTop
-        let $titleHeight = self.$refs.authTitle.clientHeight
-        let $offsetTop = self.$refs.authTitle.offsetTop
+        // let $scrollTop = document.body.scrollTop
+        // let $titleHeight = self.$refs.authTitle.clientHeight
+        // let $offsetTop = self.$refs.authTitle.offsetTop
 
-        if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
-          icon = {
-            icon1: '',
-            icon1_p: ''
-          }
+        if (flag !== 'icon2') {
+          icon = self.icon1
         }
+        // if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
+        //   icon = {
+        //     icon1: '',
+        //     icon1_p: ''
+        //   }
+        // }
 
         util.callNative('ClientNavigationManager', 'setRightIcon', {
           righticons: icon
@@ -401,14 +410,9 @@ export default {
             }
             util.callNative('ClientShareManager', 'shareAction', opt)
           } else {
-            let type = self.isAttention ? 1 : 0
-            let info = {
-              userId: self.authInfo.userId,
-              username: self.userInfo.name,
-              imgurl: self.userInfo.userpic,
-              icon1: true
-            }
-            self.followToggle(null, type, self.authInfo, info, self)
+            const type = self.isAttention ? 1 : 0
+            const icon1 = true
+            self.followToggle(null, type, icon1)
           }
         })
       }
@@ -443,22 +447,19 @@ export default {
         this.setRightIcon(icon2, 'icon2')
       }
     },
-    followToggle: function (e, type, userId, info) {
-      let self = this
-      info = {
-        userId: self.authInfo.userId,
-        username: self.userInfo.name,
-        imgurl: self.userInfo.userpic
+    followToggle: function (e, type, icon1) {
+      const info = {
+        loginId: this.authInfo.userId,
+        userId: this.urlUserId,
+        userAuth: this.authInfo.userAuth,
+        userAgent: this.authInfo.userAgent,
+        objecttypeid: 10,
+        userName: this.userInfo.name,
+        imgUrl: this.userInfo.userpic,
+        title: this.userInfo.title || '',
+        description: this.userInfo.description || ''
       }
-      // info = {
-      //   userId: '',
-      //   authId: self.authInfo.userId,
-      //   objecttypeid: '',
-      //   userAuth: '',
-      //   userAgent: '',
-      //   icon1
-      // }
-      func.followToggle(e, type, self.authInfo, info, self)
+      func.followToggle(e, type, info, icon1, this)
     },
     // tab切换
     tabClick: function (e, index) {
@@ -466,6 +467,7 @@ export default {
       this.newsList = []
       this.lastpageid = ''
       this.defaultData.navIndex = index
+      util.callNative('ClientViewManager', 'showLoadingView')
       this.getPageInfo()
     },
     resize: function (e) {

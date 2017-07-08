@@ -1,60 +1,132 @@
 <template>
-  <div class="hello">
-    <h1>{{ msg }}</h1>
-    <ul>
-      <li><a href="/author" target="_blank">作者主客页</a></li>
-      <li><a href="/tab-name" target="_blank">标签列表页</a></li>
-      <li><a href="/my-follow" target="_blank">我的关注</a></li>
-      <li><a href="/follow-more" target="_blank">关注更多</a></li>
-    </ul>
-
-    <h2>Essential Links</h2>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank">Forum</a></li>
-      <li><a href="https://gitter.im/vuejs/vue" target="_blank">Gitter Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank">Twitter</a></li>
-      <br>
-      <li><a href="http://vuejs-templates.github.io/webpack/" target="_blank">Docs for This Template</a></li>
-    </ul>
-    <h2>Ecosystem</h2>
-    <ul>
-      <li><a href="http://router.vuejs.org/" target="_blank">vue-router</a></li>
-      <li><a href="http://vuex.vuejs.org/" target="_blank">vuex</a></li>
-      <li><a href="http://vue-loader.vuejs.org/" target="_blank">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank">awesome-vue</a></li>
-    </ul>
-  </div>
+  <a class="c-att-t" v-if="!isAttention" @click.stop="followToggle"><span>＋</span> 关注</a>
+  <a class="c-att-t on" @click.stop="followToggle" v-else-if="!noAttention">已关注</a>
 </template>
 
 <script>
-export default {
-  name: 'hello',
-  data () {
+import * as util from '../api/util.js'
+
+export default{
+  props: ['attention', 'newsData', 'authInfo', 'objecttypeid', 'noAttention'],
+  data: function () {
     return {
-      msg: 'Welcome to Your Vue.js App'
+      isAttention: this.attention
+    }
+  },
+  methods: {
+    followToggle (e) {
+      var pvMap = {
+        'eventid': 'chejiahao_cancelorattention_click',
+        'pagename': 'chejiahao_cancelorattention',
+        'reportjson': {
+          'userid#1': this.authInfo.userId || 0, // loginId
+          'typeid#2': !this.isAttention ? '1' : '2',
+          'userid2#3': this.newsData.userId || 0,
+          'objecttypeid#4': this.objecttypeid || ''
+        }
+      }
+      util.chejiahaoPv(pvMap)
+
+      if (Number(this.authInfo.userId)) {
+        let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
+        if (this.isAttention) {
+          url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+        }
+        util.ajax({
+          url: url,
+          type: 'POST',
+          isJson: true,
+          data: {
+            userId: this.newsData.userId,
+            _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
+            pcpopclub: this.authInfo.userAuth,
+            autohomeua: this.authInfo.userAgent
+          },
+          dataType: 'json',
+          success: (res, xml) => {
+            res = JSON.parse(res)
+            // res.result = '1'
+            if (res.result) {
+              // if ((icon1) || (/author/.test(window.location.href))) {
+              //   this.icon1 = {
+              //     icon1: !this.isAttention ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
+              //     icon1_p: !this.isAttention ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
+              //   }
+              //   // target.setRightIcon(icon1)
+              // }
+              if (!this.isAttention) {
+                this.isAttention = 1
+                util.callNative('ClientViewManager', 'showToastView', {
+                  type: 1,
+                  msg: '关注成功'
+                })
+              } else {
+                this.isAttention = 0
+                util.callNative('ClientViewManager', 'showToastView', {
+                  type: 1,
+                  msg: '取消关注成功'
+                })
+              }
+              // data = {
+              //   isAttention: this.isAttention
+              // }
+              // this.$emit('on-follow', data)
+            }
+          },
+          fail: function (status) {
+            console.log('失败，请重试')
+          }
+        })
+      } else {
+        let url = !this.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+        let post = {
+          userid: this.newsData.userId
+        }
+        if (!this.isAttention) {
+          post = {
+            imgurl: this.newsData.imgUrl || '',
+            time: this.newsData.time || '',
+            userid: this.newsData.userId || '',
+            username: this.newsData.userName || '',
+            title: this.newsData.title || '',
+            description: this.newsData.description || ''
+          }
+        }
+
+        util.callNative('ClientDataManager', url, post, function (result) {
+          if (result.result) {
+            // if ((icon1) || (/author/.test(window.location.href))) {
+            //   this.icon1 = {
+            //     icon1: !this.isAttention ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
+            //     icon1_p: !this.isAttention ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
+            //   }
+            //   // target.setRightIcon(icon1)
+            // }
+            if (!this.isAttention) {
+              this.isAttention = 1
+              util.callNative('ClientViewManager', 'showToastView', {
+                type: 1,
+                msg: '关注成功'
+              })
+            } else {
+              this.isAttention = 0
+              util.callNative('ClientViewManager', 'showToastView', {
+                type: 1,
+                msg: '取消关注成功'
+              })
+            }
+
+            // data = {
+            //   icon1: this.icon1,
+            //   isAttention: this.isAttention
+            // }
+            // this.$emit('on-follow', data)
+          }
+        })
+      }
     }
   }
 }
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style scoped>
-h1, h2 {
-  font-weight: normal;
-}
-
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-
-li {
-  display: inline-block;
-  margin: 0 10px;
-}
-
-a {
-  color: #42b983;
-}
+<style lang="stylus">
 </style>
