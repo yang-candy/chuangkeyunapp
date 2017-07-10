@@ -8,28 +8,34 @@ import * as util from '../api/util.js'
 
 export default{
   props: ['attention', 'newsData', 'authInfo', 'objecttypeid', 'noAttention'],
-  data: function () {
-    return {
-      isAttention: this.attention
+  computed: {
+    isAttention: {
+      get: function () {
+        return this.attention
+      },
+      set: function (value) {
+        this.attention = value
+      }
     }
   },
   methods: {
     followToggle (e) {
-      var pvMap = {
+      const self = this
+      let pvMap = {
         'eventid': 'chejiahao_cancelorattention_click',
         'pagename': 'chejiahao_cancelorattention',
         'reportjson': {
-          'userid#1': this.authInfo.userId || 0, // loginId
-          'typeid#2': !this.isAttention ? '1' : '2',
-          'userid2#3': this.newsData.userId || 0,
-          'objecttypeid#4': this.objecttypeid || ''
+          'userid#1': self.authInfo.userId || 0, // loginId
+          'typeid#2': !self.isAttention ? '1' : '2',
+          'userid2#3': self.newsData.userid || 0,
+          'objecttypeid#4': self.objecttypeid || ''
         }
       }
       util.chejiahaoPv(pvMap)
 
-      if (Number(this.authInfo.userId)) {
+      if (Number(self.authInfo.userId)) {
         let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-        if (this.isAttention) {
+        if (self.isAttention) {
           url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
         }
         util.ajax({
@@ -37,40 +43,28 @@ export default{
           type: 'POST',
           isJson: true,
           data: {
-            userId: this.newsData.userId,
+            userId: self.newsData.userid,
             _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-            pcpopclub: this.authInfo.userAuth,
-            autohomeua: this.authInfo.userAgent
+            pcpopclub: self.authInfo.userAuth,
+            autohomeua: self.authInfo.userAgent
           },
           dataType: 'json',
-          success: (res, xml) => {
+          success: function (res, xml) {
             res = JSON.parse(res)
-            // res.result = '1'
             if (res.result) {
-              // if ((icon1) || (/author/.test(window.location.href))) {
-              //   this.icon1 = {
-              //     icon1: !this.isAttention ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-              //     icon1_p: !this.isAttention ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-              //   }
-              //   // target.setRightIcon(icon1)
-              // }
-              if (!this.isAttention) {
-                this.isAttention = 1
+              if (!self.isAttention) {
+                self.isAttention = 1
                 util.callNative('ClientViewManager', 'showToastView', {
                   type: 1,
                   msg: '关注成功'
                 })
               } else {
-                this.isAttention = 0
+                self.isAttention = 0
                 util.callNative('ClientViewManager', 'showToastView', {
                   type: 1,
                   msg: '取消关注成功'
                 })
               }
-              // data = {
-              //   isAttention: this.isAttention
-              // }
-              // this.$emit('on-follow', data)
             }
           },
           fail: function (status) {
@@ -78,49 +72,36 @@ export default{
           }
         })
       } else {
-        let url = !this.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+        let url = !self.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
         let post = {
-          userid: this.newsData.userId
+          userid: self.newsData.userid
         }
-        if (!this.isAttention) {
+        if (!self.isAttention) {
           post = {
-            imgurl: this.newsData.imgUrl || '',
-            time: this.newsData.time || '',
-            userid: this.newsData.userId || '',
-            username: this.newsData.userName || '',
-            title: this.newsData.title || '',
-            description: this.newsData.description || ''
+            imgurl: self.newsData.userpic || '',
+            time: self.newsData.usertime || '',
+            userid: self.newsData.userid || '',
+            username: self.newsData.username || '',
+            title: self.newsData.title || '',
+            description: self.newsData.userdesc || ''
           }
         }
 
         util.callNative('ClientDataManager', url, post, function (result) {
           if (result.result) {
-            // if ((icon1) || (/author/.test(window.location.href))) {
-            //   this.icon1 = {
-            //     icon1: !this.isAttention ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-            //     icon1_p: !this.isAttention ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-            //   }
-            //   // target.setRightIcon(icon1)
-            // }
-            if (!this.isAttention) {
-              this.isAttention = 1
+            if (!self.isAttention) {
+              self.isAttention = 1
               util.callNative('ClientViewManager', 'showToastView', {
                 type: 1,
                 msg: '关注成功'
               })
             } else {
-              this.isAttention = 0
+              self.isAttention = 0
               util.callNative('ClientViewManager', 'showToastView', {
                 type: 1,
                 msg: '取消关注成功'
               })
             }
-
-            // data = {
-            //   icon1: this.icon1,
-            //   isAttention: this.isAttention
-            // }
-            // this.$emit('on-follow', data)
           }
         })
       }

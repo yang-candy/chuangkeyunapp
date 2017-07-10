@@ -5,18 +5,18 @@
       <pull-refresh :next="refresh" :before="beforePull">
         <div ref="jsTb" class="c-tab-bd js-tb" slot="list">
           <ul class="c-tab-ul">
-            <li v-for="(item, index) in newsList" @click.stop="toArticleDetail($event, item, index)">
+            <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
               <div class="c-media-item">
                 <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
                   <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
                   <p class="c-auth-title">{{item.username}}</p>
                 </div>
-                <follow-toggle :noAttention="true" :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+                <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
               </div>
-              <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg !== 0">
+              <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && item.recommendShowBigImg === 0">
+              <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
                 <p>{{item.title}}</p>
                 <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
               </div>
@@ -97,7 +97,7 @@ export default {
       },
       tabIndex: 0,
       hasReFresh: false,
-      isLoad: true,
+      isLoad: false,
       isEmpty: false,
       isloadmore: 0,
       pageType: 3,
@@ -151,9 +151,8 @@ export default {
     setTabBar: function () {
       let self = this
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
-        util.callNative('ClientViewManager', 'showLoadingView')
+        self.isEmpty = false
         document.body.scrollTop = 0
-        self.isLoad = true
         self.tabIndex = Number(index.index)
         self.newsList = []
 
@@ -223,7 +222,7 @@ export default {
             if (follow.result.length) {
               follow.result.map(function (v) {
                 self.newsList.map(function (j) {
-                  if (v['userId'] === j['userid']) {
+                  if (Number(v['userId']) === Number(j['userid'])) {
                     j['isattention'] = '1'
                   }
                 })

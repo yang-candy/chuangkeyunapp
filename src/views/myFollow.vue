@@ -10,7 +10,7 @@
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
 
           <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo" v-if="isV"></follow-toggle>
-          
+
           <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
           <div class="c-att-des" v-if="!isV">
@@ -48,7 +48,7 @@ export default {
         navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
-      isLoad: true,
+      isLoad: false,
       isEmpty: false,
       isNet: true,
       isV: false,
@@ -339,8 +339,8 @@ export default {
   display block
   margin 1rem
   font-size .85rem
-  color #333
-  border 1px solid #ccc
+  color #2873ff
+  border 1px solid #2873ff
   line-height 2.5
   text-align center
   text-decoration none

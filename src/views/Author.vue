@@ -32,7 +32,7 @@
 
       <div ref="jsTb" class="c-tab-bd js-tb" v-scroll="getMore">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in newsList" @click.stop="toArticleDetail($event, item, index)">
+          <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info">
                 <img class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" alt="" @error="loadError($event)">
@@ -41,10 +41,10 @@
               
               <a class="c-att-delete" v-show="isAuthor && item['iscandelete'] === 1" @click.stop="deleteNewModal(item, index, $event)"></a>
             </div>
-            <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg !== 0">
+            <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
-            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && item.recommendShowBigImg === 0">
+            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
               <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
             </div>
@@ -131,28 +131,19 @@ export default {
         headImg: require('../assets/pic_head.png')
       },
       isFirstRequest: false,
-      isLoad: true,
+      isLoad: false,
       isEmpty: false,
-      isAuthor: false,
+      isAuthor: true,
       isAttention: 0,
       isloadmore: 0,
       pageType: 4,
       lastpageid: '',
       urlUserId: util.getParam('userId'),
-      icon1: {
-        icon1: '',
-        icon1_p: ''
-      },
       authInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
       media: {},
       newsList: []
-    }
-  },
-  computed: {
-    getMedia: function () {
-      return this.media
     }
   },
   mounted: function () {
@@ -218,23 +209,23 @@ export default {
           self.isLoad = false
           setTimeout(function () {
             util.callNative('ClientViewManager', 'hideLoadingView')
-          }, 0)
+          }, 1500)
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
           }
           if (res.result.userinfo) {
-            // res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
+            res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
             if (!self.isFirstRequest) {
               self.userInfo = res.result.userinfo
             }
-            self.getLocalDataForFollow()
+            self.isAttention = res.result.userinfo.isattention
+            self.getLocalDataForFollow(self.newsList)
           }
           if (!self.isFirstRequest) {
             self.setImgWithBlur()
             self.navBarWatch()
           }
-          self.isEmpty = !self.newsList.length
-          self.isAttention = res.result.userinfo.isattention
+          self.isEmpty = !res.result.newslist.length
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastid || ''
           self.isFirstRequest = true
@@ -264,8 +255,9 @@ export default {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
-                if (v['userId'] === self.urlUserId) {
-                  self.userInfo.isattention = 1
+                if (v['userId'] === Number(self.urlUserId)) {
+                  console.log(v['userId'], self.urlUserId)
+                  self.isAttention = 1
                 }
               })
             }
@@ -286,7 +278,6 @@ export default {
     },
     // 删除相应的信息
     deleteNew: function (item, index, e) {
-      // e.stopPropagation()
       let self = this
 
       util.ajax({
@@ -337,7 +328,7 @@ export default {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = self.$refs.authTitle.clientHeight
         let $offsetTop = self.$refs.authTitle.offsetTop
-        self.icon1 = {
+        let icon1 = {
           icon1: '',
           icon1_p: ''
         }
@@ -355,7 +346,7 @@ export default {
           }
 
           let type = self.isAttention ? 1 : 0
-          self.icon1 = {
+          icon1 = {
             icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
@@ -371,26 +362,25 @@ export default {
             self.setNavBar(info)
           }
         }
-        self.setRightIcon()
+        self.setRightIcon(icon1)
       })
     },
     setRightIcon: function (icon, flag) {
       let self = this
       let shareInfo = self.shareInfo
       if (!self.isAuthor) {
-        // let $scrollTop = document.body.scrollTop
-        // let $titleHeight = self.$refs.authTitle.clientHeight
-        // let $offsetTop = self.$refs.authTitle.offsetTop
-
-        if (flag !== 'icon2') {
-          icon = self.icon1
-        }
-        // if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
-        //   icon = {
-        //     icon1: '',
-        //     icon1_p: ''
-        //   }
+        // if (flag !== 'icon2') {
+        //   icon = self.icon1
         // }
+        let $scrollTop = document.body.scrollTop
+        let $titleHeight = self.$refs.authTitle.clientHeight
+        let $offsetTop = self.$refs.authTitle.offsetTop
+        if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
+          icon = {
+            icon1: '',
+            icon1_p: ''
+          }
+        }
 
         util.callNative('ClientNavigationManager', 'setRightIcon', {
           righticons: icon
@@ -453,7 +443,7 @@ export default {
         userId: this.urlUserId,
         userAuth: this.authInfo.userAuth,
         userAgent: this.authInfo.userAgent,
-        objecttypeid: 10,
+        objecttypeid: this.isAuthor ? 7 : 8,
         userName: this.userInfo.name,
         imgUrl: this.userInfo.userpic,
         title: this.userInfo.title || '',
@@ -463,11 +453,10 @@ export default {
     },
     // tab切换
     tabClick: function (e, index) {
-      this.isLoad = true
+      this.isEmpty = false
       this.newsList = []
       this.lastpageid = ''
       this.defaultData.navIndex = index
-      util.callNative('ClientViewManager', 'showLoadingView')
       this.getPageInfo()
     },
     resize: function (e) {
@@ -546,7 +535,6 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="stylus" scoped>
 .c-auth-top
   .c-auth-bg

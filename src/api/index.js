@@ -31,14 +31,13 @@ export function followToggle (e, type, info, icon1, target) {
       dataType: 'json',
       success: function (res, xml) {
         res = JSON.parse(res)
+        // res.result = 1
         if (res.result) {
           if ((icon1) || (/author/.test(window.location.href))) {
-            target.icon1 = {
+            icon1 = {
               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
               icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
             }
-
-            // target = icon1
             target.setRightIcon(icon1)
           }
           if (!type) {
@@ -54,11 +53,6 @@ export function followToggle (e, type, info, icon1, target) {
               msg: '取消关注成功'
             })
           }
-          // data = {
-          //   icon1: target.icon1,
-          //   isAttention: target.isAttention
-          // }
-          // target.$emit('on-follow', data)
         }
       },
       fail: function (status) {
@@ -84,11 +78,11 @@ export function followToggle (e, type, info, icon1, target) {
     util.callNative('ClientDataManager', url, post, function (result) {
       if (result.result) {
         if ((icon1) || (/author/.test(window.location.href))) {
-          target.icon1 = {
+          icon1 = {
             icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
-          // target.setRightIcon(icon1)
+          target.setRightIcon(icon1)
         }
         if (!type) {
           target.isAttention = 1
@@ -103,11 +97,6 @@ export function followToggle (e, type, info, icon1, target) {
             msg: '取消关注成功'
           })
         }
-        // data = {
-        //   icon1: this.icon1,
-        //   isAttention: this.isAttention
-        // }
-        // this.$emit('on-follow', data)
       }
     })
   }
@@ -295,120 +284,6 @@ export function toAuthorPage (e, userId, loginId) {
 }
 
 export function author2 (e, self) {
-  // followToggle (e) {
-  //     var pvMap = {
-  //       'eventid':  'chejiahao_cancelorattention_click',
-  //       'pagename': 'chejiahao_cancelorattention',
-  //       'reportjson': {
-  //         'userid#1': info.loginId || 0, // loginId
-  //         'typeid#2': !type ? '1': '2',
-  //         'userid2#3': info.userId || 0,
-  //         'objecttypeid#4': info.objecttypeid || ''
-  //       }
-  //     }
-  //     util.chejiahaoPv(pvMap)
-
-  //     if (Number(info.loginId)) {
-  //       if (!type) {
-  //         const $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-  //       } else {
-  //         $url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
-  //       }
-  //       util.ajax({
-  //         url: $url,
-  //         type: 'POST',
-  //         isJson: true,
-  //         data: {
-  //           userId: info.userId,
-  //           _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-  //           pcpopclub: info.userAuth,
-  //           autohomeua: info.userAgent
-  //         },
-  //         dataType: 'json',
-  //         success: function (res, xml) {
-  //           res = JSON.parse(res)
-  //           res.result = '1'
-  //           if (res.result) {
-  //             if ((icon1) || (/author/.test(window.location.href))) {
-  //               this.icon1 = {
-  //                 icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-  //                 icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-  //               }
-  //               // target.setRightIcon(icon1)
-  //             }
-  //             if (!type) {
-  //               this.isAttention = 1
-  //               util.callNative('ClientViewManager', 'showToastView', {
-  //                 type: 1,
-  //                 msg: '关注成功'
-  //               })
-  //             } else {
-  //               this.isAttention = 0
-  //               util.callNative('ClientViewManager', 'showToastView', {
-  //                 type: 1,
-  //                 msg: '取消关注成功'
-  //               })
-  //             }
-
-  //             data = {
-  //               icon1: this.icon1,
-  //               isAttention: this.isAttention
-  //             }
-  //             this.$emit('on-follow', data)
-  //           }
-  //         },
-  //         fail: function (status) {
-  //           console.log('失败，请重试')
-  //         }
-  //       })
-  //     } else {
-  //       let url = !type ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
-  //       let post = {
-  //         userid: info.userId
-  //       }
-  //       if (!type) {
-  //         post = {
-  //           imgurl: info.imgUrl || '',
-  //           time: info.time || '',
-  //           userid: info.userId || '',
-  //           username: info.userName || '',
-  //           title: info.title || '',
-  //           description: info.description || ''
-  //         }
-  //       }
-
-  //       util.callNative('ClientDataManager', url, post, function (result) {
-  //         if (result.result) {
-  //           if ((icon1) || (/author/.test(window.location.href))) {
-  //             this.icon1 = {
-  //               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-  //               icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-  //             }
-  //             // target.setRightIcon(icon1)
-  //           }
-  //           if (!type) {
-  //             this.isAttention = 1
-  //             util.callNative('ClientViewManager', 'showToastView', {
-  //               type: 1,
-  //               msg: '关注成功'
-  //             })
-  //           } else {
-  //             this.isAttention = 0
-  //             util.callNative('ClientViewManager', 'showToastView', {
-  //               type: 1,
-  //               msg: '取消关注成功'
-  //             })
-  //           }
-
-  //           data = {
-  //             icon1: this.icon1,
-  //             isAttention: this.isAttention
-  //           }
-  //           this.$emit('on-follow', data)
-  //         }
-  //       })
-  //     }
-  //   }
 }
 
 export function toArticleDetail (e, news) {
@@ -418,35 +293,6 @@ export function toArticleDetail (e, news) {
   }
   deleteMedia(media)
 
-  // 头像空白页跳转到最终页
-  // if(e.target.className == 'c-media-info'){
-  //   var typeid = $($curTarget).attr('mediatype');
-  //   var odjectid = (typeid == '3' || typeid == '4') ? $($curTarget).attr('mediaid') : $($curTarget).attr('newsid');
-  //   var pvMap = {
-  //     "eventid":  'chejiahao_list_detail_click',
-  //     "pagename": 'chejiahao_list_detail',
-  //     "reportjson": {
-  //       "userid#1": vm.data.userId,
-  //       "typeid#2": $($curTarget).attr('mediatype'),
-  //       "objectid#3": odjectid,
-  //       "position#4": $($curTarget).attr('position')
-  //     }
-  //   };
-  //   vm.chejiahaoClick(pvMap);
-  //   util.callNative('ClientViewManager', 'pushViewController', {
-  //     pagetype: 2,
-  //     animationtype: 2,
-  //     param: {
-  //       newsid: $($curTarget).attr('newsid'),
-  //       type: $($curTarget).attr('mediatype'),
-  //       autoscrolltocomment: 0
-  //     }
-  //   });
-  //   return;
-  // }
-  // if (e.target.tagName != 'LI' && e.target.className == 'c-qing-img' &&  $(e.target).attr('imgnum') >= 3) {
-  //   return;
-  // }
   let mediaType = news.mediaType
   let odjectId = (mediaType === '3' || mediaType === '4') ? news.mediaId : news.newsId
   let pvMap = {

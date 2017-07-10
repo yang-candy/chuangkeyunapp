@@ -8,7 +8,7 @@
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
-          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+          <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
           <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
@@ -94,12 +94,12 @@ export default {
         if (!Number(self.isNet)) {
           util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.isLoad = true
             self.getNavBar()
           })
         } else {
           util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
             self.authInfo = user
+            self.isLoad = true
             self.getFollowMoreList()
           })
         }
@@ -151,9 +151,9 @@ export default {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
-                self.followList.map(function (j) {
+                self.followList.map(function (j, i) {
                   if (v['userId'] === j['userid']) {
-                    j['isattention'] = '1'
+                    j['isattention'] = 1
                   }
                 })
               })
@@ -168,11 +168,11 @@ export default {
     },
     // tab切换
     tabClick: function (id, index) {
+      this.isEmpty = false
       this.followList = []
       this.navIndex = index
       this.followId = id
       this.lastpageid = ''
-      util.callNative('ClientViewManager', 'showLoadingView')
       this.getFollowMore()
     },
     getMore: function (e) {
