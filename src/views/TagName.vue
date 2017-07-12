@@ -149,14 +149,6 @@ export default {
     }
   },
   methods: {
-    handleTopChange (status) {
-      // if (status === 'pull') {
-      //   console.log('pull')
-      //   func.deleteMedia(this.media)
-      // }
-      func.deleteMedia(this.media)
-      this.topStatus = status
-    },
     beforePull () {
       func.deleteMedia(this.media)
     },
@@ -175,6 +167,7 @@ export default {
         document.body.scrollTop = 0
         self.tabIndex = Number(index.index)
         self.newsList = []
+        self.lastpageid = ''
 
         func.deleteMedia(self.media)
         self.getPageList()
