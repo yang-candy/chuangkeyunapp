@@ -41,7 +41,7 @@
               
               <a class="c-att-delete" v-show="isAuthor && item['iscandelete'] === 1" @click.stop="deleteNewModal(item, index, $event)"></a>
             </div>
-            <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg">
+            <div class="c-media-desc" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
@@ -618,4 +618,8 @@ export default {
     
     span
       font-size .7rem
+
+.c-tab-list 
+  border-top .5rem solid #F8F8F8
+ 
 </style>

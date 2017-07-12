@@ -16,7 +16,8 @@ module.exports = {
     'html'
   ],
   'globals': {
-    'ApiBridge': true
+    'ApiBridge': true,
+    'Vue': true
   },
 
   // add your custom rules here

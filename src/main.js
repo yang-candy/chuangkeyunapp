@@ -6,15 +6,21 @@
 import Vue from 'vue'
 import App from './App'
   
-// require('./api/fastclick.js')
-
-// if ('addEventListener' in document) {  
-//   document.addEventListener('DOMContentLoaded', function () {  
-//     window.FastClick.attach(document.body)  
-//   }, false)  
-// }  
 const FastClick = require('fastclick')
 FastClick.attach(document.body)
+
+import VueLazyload from 'vue-lazyload'
+
+// use custom directive
+Vue.use(VueLazyload)
+
+// use options
+Vue.use(VueLazyload, {
+  preLoad: 1.3,
+  error: '',
+  loading: 'dist/loading.gif',
+  attempt: 1
+})
 
 Vue.config.productionTip = false
 

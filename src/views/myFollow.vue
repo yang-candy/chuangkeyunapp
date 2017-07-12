@@ -1,6 +1,7 @@
 <template>
   <div class="c-wp" v-scroll="getMore">
-    <div class="js-follow-more">
+    <top-load-more :afterPull="loadTop" :beforePull="loadTop">
+    <div class="js-follow-more" slot="list">
       <a class="c-att-more" v-if="!isV" @click.stop="toFollowMore">
         <span></span> 关注更多
       </a>
@@ -30,17 +31,20 @@
         <p>加载中...</p>
       </div>
     </div>
+    </top-load-more>
   </div>
 </template>
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import followToggle from '../components/followToggle'
+import topLoadMore from '../components/topLoadMore'
 
 export default {
   name: 'myFollow',
   components: {
-    followToggle
+    followToggle,
+    topLoadMore
   },
   data: function () {
     return {
@@ -80,6 +84,9 @@ export default {
     }
   },
   methods: {
+    loadTop () {
+      console.log('test')
+    },
     init () {
       const self = this
       // 判断是否联网

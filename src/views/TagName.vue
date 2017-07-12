@@ -1,73 +1,73 @@
 <template>
   <!-- <keep-alive></keep-alive>>   -->
   <div class="c-wp" v-scroll="getMore">
-    <div class="c-tab-list" >
-      <pull-refresh :next="refresh" :before="beforePull">
-        <div ref="jsTb" class="c-tab-bd js-tb" slot="list">
-          <ul class="c-tab-ul">
-            <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
-              <div class="c-media-item">
-                <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
-                  <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
-                  <p class="c-auth-title">{{item.username}}</p>
-                </div>
-                <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+    <top-load-more :afterPull="afterPull" :beforePull="beforePull">
+    <div class="c-tab-list" slot="list">
+      <div ref="jsTb" class="c-tab-bd js-tb">
+        <ul class="c-tab-ul">
+          <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
+            <div class="c-media-item">
+              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
+                <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
+                <p class="c-auth-title">{{item.username}}</p>
               </div>
-              <div class="c-media-desc" v-if="item.mediatype !== 4 && item.recommendShowBigImg">
-                {{item.mediatype === 2 ? item.description : item.title}}
-              </div>
-              <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
-                <p>{{item.title}}</p>
-                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
-              </div>
-              <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
-              </div>
+              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+            </div>
+            <div class="c-media-desc" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
+              {{item.mediatype === 2 ? item.description : item.title}}
+            </div>
+            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
+              <p>{{item.title}}</p>
+              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+            </div>
+            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+            </div>
 
-              <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-                <img class="c-auth-info-img c-auth-audio-img" alt=""
-                  v-for="(img, imgIndex) in item.thumbnailpics"
-                  v-if="imgIndex < 3"
-                  :src="img" 
-                  @load="resize($event)" 
-                  @error="loadError($event)"
-                  @click="scaleQingImg($event, item, imgIndex)"
-                >
-              </div>
+            <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
+              <img class="c-auth-info-img c-auth-audio-img" alt=""
+                v-for="(img, imgIndex) in item.thumbnailpics"
+                v-if="imgIndex < 3"
+                :src="img" 
+                @load="resize($event)" 
+                @error="loadError($event)"
+                @click="scaleQingImg($event, item, imgIndex)"
+              >
+            </div>
 
-              <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
-                <span class="media-video-btn"></span>
-                <span class="c-media-time">{{item.playtime}}</span>
-              </div>
+            <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
+              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
+              <span class="media-video-btn"></span>
+              <span class="c-media-time">{{item.playtime}}</span>
+            </div>
 
-              <div v-if="item.mediatype === 4" class="c-media-audio">
-                <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                  <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
-                </div>
-                <span>
-                  {{item.title}}
-                </span>
+            <div v-if="item.mediatype === 4" class="c-media-audio">
+              <div class="media-audio-pic" @click.stop="createMedia($event, item)">
+                <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
               </div>
+              <span>
+                {{item.title}}
+              </span>
+            </div>
 
-              <div class="c-media-oper">
-                <p>
-                  <span class="c-looked">{{item['pv'] || 0}}{{item['mediatype'] === 3 || item['mediatype'] === 4 ? '播放' : '浏览'}}</span>
+            <div class="c-media-oper">
+              <p>
+                <span class="c-looked">{{item['pv'] || 0}}{{item['mediatype'] === 3 || item['mediatype'] === 4 ? '播放' : '浏览'}}</span>
 
-                  <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
-                </p>
-                <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
-              </div>
-              
-            </li>
-          </ul>
-        </div>
-      </pull-refresh>
+                <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
+              </p>
+              <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
+            </div>
+            
+          </li>
+        </ul>
+      </div>
       <div class="c-loading" v-show="isLoad">
         <span class="loading-icon"></span> 
         <p>加载中...</p>
       </div>
     </div>
+    </top-load-more>
     
     <div class="c-empty" v-show="isEmpty"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
@@ -79,15 +79,15 @@
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import zanAndComment from '../components/zanAndComment'
-import pullRefresh from '../components/pullRefresh'
 import followToggle from '../components/followToggle'
+import topLoadMore from '../components/topLoadMore'
 
 export default {
   name: 'tagName',
   components: {
     zanAndComment,
-    pullRefresh,
-    followToggle
+    followToggle,
+    topLoadMore
   },
   data: function () {
     return {
@@ -102,6 +102,7 @@ export default {
       isloadmore: 0,
       pageType: 3,
       lastpageid: '',
+      topStatus: '',
       urlUserId: util.getParam('userId'),
       authInfo: {}, // 当前用户的信息（登录者）
       media: {},
@@ -148,6 +149,25 @@ export default {
     }
   },
   methods: {
+    handleTopChange (status) {
+      // if (status === 'pull') {
+      //   console.log('pull')
+      //   func.deleteMedia(this.media)
+      // }
+      func.deleteMedia(this.media)
+      this.topStatus = status
+    },
+    beforePull () {
+      func.deleteMedia(this.media)
+    },
+    afterPull () {
+      setTimeout(() => {
+        if (!this.isLoad) {
+          this.isLoad = true
+          this.getPageList()
+        }
+      }, 1500)
+    },
     setTabBar: function () {
       let self = this
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
@@ -302,19 +322,19 @@ export default {
         position: index + 1
       }
       func.toArticleDetail(e, data)
-    },
-    beforePull () {
-      func.deleteMedia(this.media)
-    },
-    refresh () {
-      return new Promise((resolve, reject) => {
-        this.getPageList()
-        setTimeout(() => {
-          func.deleteMedia(this.media)
-          resolve()
-        }, 1200)
-      })
     }
+    // beforePull () {
+    //   func.deleteMedia(this.media)
+    // },
+    // refresh () {
+    //   return new Promise((resolve, reject) => {
+    //     this.getPageList()
+    //     setTimeout(() => {
+    //       func.deleteMedia(this.media)
+    //       resolve()
+    //     }, 1200)
+    //   })
+    // }
   }
 }
 </script>
