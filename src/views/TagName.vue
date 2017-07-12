@@ -8,7 +8,7 @@
           <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
-                <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)">
+                <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
               <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
@@ -18,32 +18,31 @@
             </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
             <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
               <img class="c-auth-info-img c-auth-audio-img" alt=""
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
-                :src="img" 
+                v-lazy="img" 
                 @load="resize($event)" 
-                @error="loadError($event)"
                 @click="scaleQingImg($event, item, imgIndex)"
               >
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" @load="resize($event)">
               <span class="media-video-btn"></span>
               <span class="c-media-time">{{item.playtime}}</span>
             </div>
 
             <div v-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img class="c-auth-info-img c-auth-audio-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
+                <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
               <span>
                 {{item.title}}

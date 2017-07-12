@@ -3,11 +3,11 @@
   <div class="c-wp c-author">
     <div class="c-auth-top">
       <div class="c-auth-bg">
-        <img :src="userInfo.bgimg || defaultData.navBarImg" @error="loadError($event)">
+        <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
       </div>
       <div class="c-auth-info">
         <div class="c-auth-head">
-          <img id="c-auth-img" class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" @error="loadError($event)">
+          <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg">
         </div>
         <div class="c-author-intro">
           <h3 ref="authTitle" class="c-auth-title">{{userInfo.name}}</h3>
@@ -35,7 +35,7 @@
           <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info">
-                <img class="c-auth-img" :src="userInfo.userpic || defaultData.headImg" alt="" @error="loadError($event)">
+                <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg" alt="">
                 <p class="c-auth-title">{{userInfo.name}}</p>
               </div>
               
@@ -46,32 +46,31 @@
             </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
             <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
               <img class="c-auth-info-img" alt=""
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
-                :src="img" 
+                v-lazy="img" 
                 @load="resize($event)" 
-                @error="loadError($event)"
                 @click="scaleQingImg($event, item, imgIndex)"
               >
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img class="c-auth-info-img" :src="item.thumbnailpics[0]" @load="resize($event)" @error="loadError($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" @load="resize($event)">
               <span class="media-video-btn"></span>
               <span class="c-media-time">{{item.playtime}}</span>
             </div>
 
             <div v-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img class="c-auth-info-img" :src="item.thumbnailpics[0]" alt="" @error="loadError($event)">
+                <img imgType="audio" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
               <span>
                 {{item.title}}
@@ -86,18 +85,7 @@
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
               <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
-              <!-- <p class="c-tab-ue">
-                <span class="c-zan" newsid="195275" typeid="3">
-                  <span class="zan-icon"></span>
-                  <span class="c-num">{{item['praisenum']}}</span>
-                </span>
-                <span class="c-comment" newsid="195275" type="4">
-                  <span class="c-num">{{item['replycount']}}</span>
-                </span>
-              </p> -->
-              
             </div>
-            
           </li>
         </ul>
       </div>

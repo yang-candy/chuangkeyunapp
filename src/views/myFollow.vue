@@ -12,7 +12,7 @@
 
           <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo" v-if="isV"></follow-toggle>
 
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
+          <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
           <div class="c-att-des" v-if="!isV">
             <h3 class="c-att-title c-att-title-f">{{item.username}}</h3> 

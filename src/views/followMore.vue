@@ -9,7 +9,7 @@
       <ul class="c-att-ul">
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
           <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
-          <img class="c-auth-img" :src="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
+          <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
             <p class="c-att-fans">{{item.fansnum}}粉丝</p> 
