@@ -11,12 +11,12 @@
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
-              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
             </div>
-            <div class="c-media-desc" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
+            <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
-            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
+            <div class="c-media-content c-media-long" :class="{'c-media-qing': item.mediatype === 1}" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
               <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
@@ -55,7 +55,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
             </div>
             
           </li>
@@ -103,7 +103,7 @@ export default {
       lastpageid: '',
       topStatus: '',
       urlUserId: util.getParam('userId'),
-      authInfo: {}, // 当前用户的信息（登录者）
+      loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
       newsList: []
     }
@@ -125,7 +125,7 @@ export default {
         })
       } else {
         util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
-          self.authInfo = user
+          self.loginInfo = user
           self.setTabBar()
         })
       }
@@ -162,6 +162,7 @@ export default {
     setTabBar: function () {
       let self = this
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
+        self.isLoad = false
         self.isEmpty = false
         document.body.scrollTop = 0
         self.tabIndex = Number(index.index)
@@ -181,7 +182,7 @@ export default {
         data: {
           pm: util.mobileType() === 'iOS' ? 1 : 2,
           tagid: util.getParam('tagid'),
-          au: self.authInfo.userAuth,
+          au: self.loginInfo.userAuth,
           pid: pid,
           pagesize: 20,
           otype: 0,
@@ -210,7 +211,7 @@ export default {
             'pagename': 'chejiahao_tag_list_page',
             'isdata': res.result.newslist.length ? 1 : 0,
             'reportjson': {
-              'userid1#1': self.authInfo.userId || 0,
+              'userid1#1': self.loginInfo.userId || 0,
               'objectid#2': util.getParam('tagid')
             }
           }
@@ -227,7 +228,7 @@ export default {
     getLocalDataForFollow: function () {
       let self = this
       // 未登录
-      if (!Number(self.authInfo.userId)) {
+      if (!Number(self.loginInfo.userId)) {
         try {
           util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
             // 本地数据有
@@ -303,11 +304,11 @@ export default {
       func.scaleQingImg(e, data)
     },
     toAuthorPage: function (e, news) {
-      func.toAuthorPage(e, news.userid, this.authInfo.userId)
+      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     },
     toArticleDetail: function (e, item, index) {
       let data = {
-        loginId: this.authInfo.userId,
+        loginId: this.loginInfo.userId,
         newsId: item.newsid,
         mediaId: item.mediaid,
         mediaType: item.mediatype,

@@ -27,7 +27,7 @@
     </div>
     <div class="c-tab-list">
       <ul class="c-tab-title js-td c-auth-tab">
-        <li :class="{on: defaultData.navIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick($event, index)">{{item}}</li>
+        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick($event, index)">{{item}}</li>
       </ul>
 
       <div ref="jsTb" class="c-tab-bd js-tb" v-scroll="getMore">
@@ -41,7 +41,7 @@
               
               <a class="c-att-delete" v-show="isAuthor && item['iscandelete'] === 1" @click.stop="deleteNewModal(item, index, $event)"></a>
             </div>
-            <div class="c-media-desc" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
+            <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
@@ -84,7 +84,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="authInfo"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -114,11 +114,12 @@ export default {
     return {
       defaultData: {
         navBar: ['动态', '长文', '轻文', '视频', '音频'],
-        navIndex: 0,
+        // navIndex: 0,
         navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
-      isFirstRequest: false,
+      tabIndex: 0,
+      hasRequest: false,
       isLoad: false,
       isEmpty: false,
       isAuthor: true,
@@ -127,34 +128,12 @@ export default {
       pageType: 4,
       lastpageid: '',
       urlUserId: util.getParam('userId'),
-      authInfo: {}, // 当前用户的信息（登录者）
+      loginInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
       media: {},
       newsList: []
     }
-  },
-  mounted: function () {
-    let self = this
-
-    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
-      // 未联网
-      if (!Number(data.result)) {
-        util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-          util.callNative('ClientViewManager', 'showLoadingView')
-          self.getPageInfo()
-        })
-      } else {
-        util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
-          self.authInfo = user
-          self.isAuthor = self.urlUserId === self.authInfo.userId
-          self.pageType = self.isAuthor ? 4 : 5
-          self.getPageInfo()
-        })
-      }
-    })
-    util.setViewBounces()
-    self.deleteMediaWatch()
   },
   directives: { // 自定义指令
     scroll: {
@@ -171,11 +150,31 @@ export default {
       }
     }
   },
+  mounted () {
+    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
+      // 未联网
+      if (!Number(data.result)) {
+        util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+          util.callNative('ClientViewManager', 'showLoadingView')
+          this.getPageInfo()
+        })
+      } else {
+        util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+          this.loginInfo = user
+          this.isAuthor = this.urlUserId === this.loginInfo.userId
+          this.pageType = this.isAuthor ? 4 : 5
+          this.getPageInfo()
+        })
+      }
+    })
+    util.setViewBounces()
+    this.deleteMediaWatch()
+  },
   methods: {
-    getPageInfo: function () {
-      let self = this
+    getPageInfo () {
+      const self = this
       let pid = self.lastpageid || ''
-      let dt = (self.urlUserId !== self.authInfo.userId) ? 2 : 3
+      let dt = (self.urlUserId !== self.loginInfo.userId) ? 2 : 3
       let vuserid = self.urlUserId || ''
 
       util.ajax({
@@ -185,14 +184,14 @@ export default {
           pm: util.mobileType() === 'iOS' ? 1 : 2,
           dt: dt, // 主客页区分  主页3，客页2
           vuserid: vuserid,
-          au: self.authInfo.userAuth,
+          au: self.loginInfo.userAuth,
           pid: pid,
           pagesize: 20,
           otype: 0,
-          itype: self.defaultData.navIndex || 0
+          itype: self.tabIndex || 0
         },
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           self.isLoad = false
           setTimeout(function () {
@@ -201,50 +200,49 @@ export default {
           if (res.result.newslist.length) {
             self.newsList = [...self.newsList, ...res.result.newslist]
           }
-          if (res.result.userinfo) {
+          if (res.result.userinfo && res.result.userinfo.userpic) {
             res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
-            if (!self.isFirstRequest) {
+            if (!self.hasRequest) {
               self.userInfo = res.result.userinfo
+              self.shareInfo = res.result.shareinfo
             }
             self.isAttention = res.result.userinfo.isattention
-            self.getLocalDataForFollow(self.newsList)
+            self.getLocalDataForFollow()
           }
-          if (!self.isFirstRequest) {
+          if (!self.hasRequest) {
             self.setImgWithBlur()
             self.navBarWatch()
           }
           self.isEmpty = !res.result.newslist.length
           self.isloadmore = res.result.isloadmore || ''
           self.lastpageid = res.result.lastid || ''
-          self.isFirstRequest = true
+          self.hasRequest = true
 
-          let pvMap = {
+          const pvMap = {
             'eventid': self.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
             'pagename': self.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
             'isdata': res.result.userinfo ? 1 : 0,
             'reportjson': {
-              'userid1#1': self.authInfo.userId || 0,
+              'userid1#1': self.loginInfo.userId || 0,
               'userid2#2': self.urlUserId || 0
             }
           }
           util.chejiahaoPv(pvMap)
         },
         fail: function (status) {
-          console.log(2222222222222)
         }
       })
     },
-    getLocalDataForFollow: function (userinfo) {
-      let self = this
+    getLocalDataForFollow () {
+      const self = this
       // 未登录
-      if (!Number(self.authInfo.userId)) {
+      if (!Number(self.loginInfo.userId)) {
         try {
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map(function (v) {
                 if (v['userId'] === Number(self.urlUserId)) {
-                  console.log(v['userId'], self.urlUserId)
                   self.isAttention = 1
                 }
               })
@@ -254,19 +252,18 @@ export default {
       }
     },
     // 点击删除某条信息
-    deleteNewModal: function (item, index, e) {
-      let self = this
+    deleteNewModal (item, index, e) {
       util.callNative('ClientViewManager', 'showDrawerView', {
         names: ['删除']
       }, (result) => {
         if (result.result === 0) {
-          self.deleteNew(item, index, e)
+          this.deleteNew(item, index, e)
         }
       })
     },
     // 删除相应的信息
-    deleteNew: function (item, index, e) {
-      let self = this
+    deleteNew (item, index, e) {
+      const self = this
 
       util.ajax({
         url: util.api.deleteForUserSelf,
@@ -274,7 +271,7 @@ export default {
         isJson: true,
         data: {
           _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-          pcpopclub: self.authInfo.userAuth,
+          pcpopclub: self.loginInfo.userAuth,
           // autohomeua: user.userAgent,
           infoId: item.newsid
         },
@@ -282,14 +279,16 @@ export default {
         success: function (res, xml) {
           res = JSON.parse(res)
           if (res.result === 1) {
+            func.deleteMedia(self.media)
             self.newsList.splice(index, 1)
+            self.isEmpty = !self.newsList.length
           }
         },
         fail: function (status) {}
       })
     },
     // 高斯模糊设置
-    setImgWithBlur: function () {
+    setImgWithBlur () {
       let self = this
       let opt = {
         url: this.userInfo.userpic,
@@ -306,13 +305,13 @@ export default {
       })
     },
     // 监听顶部导航
-    navBarWatch: function (data) {
-      let self = this
+    navBarWatch (data) {
+      const self = this
       let isScrollIn = false
       let isScrollOut = false
 
-      self.setNavBar({})
-      window.addEventListener('scroll', function () {
+      this.setNavBar({})
+      window.addEventListener('scroll', () => {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = self.$refs.authTitle.clientHeight
         let $offsetTop = self.$refs.authTitle.offsetTop
@@ -353,16 +352,13 @@ export default {
         self.setRightIcon(icon1)
       })
     },
-    setRightIcon: function (icon, flag) {
+    setRightIcon (icon, flag) {
       let self = this
-      let shareInfo = self.shareInfo
-      if (!self.isAuthor) {
-        // if (flag !== 'icon2') {
-        //   icon = self.icon1
-        // }
+      let shareInfo = this.shareInfo
+      if (!this.isAuthor) {
         let $scrollTop = document.body.scrollTop
-        let $titleHeight = self.$refs.authTitle.clientHeight
-        let $offsetTop = self.$refs.authTitle.offsetTop
+        let $titleHeight = this.$refs.authTitle.clientHeight
+        let $offsetTop = this.$refs.authTitle.offsetTop
         if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
           icon = {
             icon1: '',
@@ -372,7 +368,7 @@ export default {
 
         util.callNative('ClientNavigationManager', 'setRightIcon', {
           righticons: icon
-        }, function (result) {
+        }, (result) => {
           if (result.result === 'icon2') {
             let opt = {
               share: {
@@ -384,7 +380,7 @@ export default {
               },
               pagetype: 5,
               sharepositiontype: 44,
-              objectid: self.authInfo.userId
+              objectid: self.urlUserId
             }
             util.callNative('ClientShareManager', 'shareAction', opt)
           } else {
@@ -395,7 +391,7 @@ export default {
         })
       }
     },
-    setNavBar: function (info) {
+    setNavBar (info) {
       util.callNative('ClientNavigationManager', 'setNavBackIcon', {
         navigationbacktype: info.navigationbacktype || 5
       })
@@ -425,12 +421,12 @@ export default {
         this.setRightIcon(icon2, 'icon2')
       }
     },
-    followToggle: function (e, type, icon1) {
+    followToggle (e, type, icon1) {
       const info = {
-        loginId: this.authInfo.userId,
+        loginId: this.loginInfo.userId,
         userId: this.urlUserId,
-        userAuth: this.authInfo.userAuth,
-        userAgent: this.authInfo.userAgent,
+        userAuth: this.loginInfo.userAuth,
+        userAgent: this.loginInfo.userAgent,
         objecttypeid: this.isAuthor ? 7 : 8,
         userName: this.userInfo.name,
         imgUrl: this.userInfo.userpic,
@@ -440,22 +436,23 @@ export default {
       func.followToggle(e, type, info, icon1, this)
     },
     // tab切换
-    tabClick: function (e, index) {
+    tabClick (e, index) {
       this.isEmpty = false
+      self.isLoad = false
       this.newsList = []
       this.lastpageid = ''
-      this.defaultData.navIndex = index
+      this.tabIndex = index
       this.getPageInfo()
     },
-    resize: function (e) {
+    resize (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
     },
-    loadError: function (e) {
+    loadError (e) {
       e.target.onerror = null
       e.target.src = ''
     },
-    createMedia: function (e, news) {
-      let curTarget = e.currentTarget
+    createMedia (e, news) {
+      const curTarget = e.currentTarget
       this.media = {
         mediaWidth: curTarget.offsetWidth,
         mediaHeight: curTarget.offsetHeight,
@@ -468,11 +465,11 @@ export default {
       }
       func.createMedia(e, news, this.media, this.pageType)
     },
-    deleteMediaWatch: function () {
+    deleteMediaWatch () {
       var self = this
-      window.addEventListener('scroll', function () {
-        let offsetHeight = window.innerHeight
-        let scrollTop = document.body.scrollTop
+      window.addEventListener('scroll', () => {
+        const offsetHeight = window.innerHeight
+        const scrollTop = document.body.scrollTop
         if (self.media.mediaStatus) {
           if ((self.media.mediaHeight + self.media.mediaY) < scrollTop || (self.media.mediaY - offsetHeight > scrollTop)) {
             self.media.mediaStatus = false
@@ -485,7 +482,7 @@ export default {
         }
       })
     },
-    getMore: function () {
+    getMore () {
       if (!this.isLoad) {
         func.deleteMedia(this.media)
         if (this.isloadmore) {
@@ -494,8 +491,8 @@ export default {
         }
       }
     },
-    scaleQingImg: function (e, news, index) {
-      let data = {
+    scaleQingImg (e, news, index) {
+      const data = {
         index: index,
         newsid: news.newsid,
         pics: news.pics,
@@ -505,12 +502,12 @@ export default {
       }
       func.scaleQingImg(e, data)
     },
-    toAuthorPage: function (e, news) {
-      func.toAuthorPage(e, news.userid, this.authInfo.userId)
+    toAuthorPage (e, news) {
+      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     },
-    toArticleDetail: function (e, item, index) {
-      let data = {
-        loginId: this.authInfo.userId,
+    toArticleDetail (e, item, index) {
+      const data = {
+        loginId: this.loginInfo.userId,
         newsId: item.newsid,
         mediaId: item.mediaid,
         mediaType: item.mediatype,

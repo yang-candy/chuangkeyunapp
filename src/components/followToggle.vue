@@ -7,7 +7,7 @@
 import * as util from '../api/util.js'
 
 export default{
-  props: ['attention', 'newsData', 'authInfo', 'objecttypeid', 'noAttention'],
+  props: ['attention', 'newsData', 'loginInfo', 'objecttypeid', 'noAttention'],
   computed: {
     isAttention: {
       get: function () {
@@ -25,7 +25,7 @@ export default{
         'eventid': 'chejiahao_cancelorattention_click',
         'pagename': 'chejiahao_cancelorattention',
         'reportjson': {
-          'userid#1': self.authInfo.userId || 0, // loginId
+          'userid#1': self.loginInfo.userId || 0, // loginId
           'typeid#2': !self.isAttention ? '1' : '2',
           'userid2#3': self.newsData.userid || 0,
           'objecttypeid#4': self.objecttypeid || ''
@@ -33,7 +33,7 @@ export default{
       }
       util.chejiahaoPv(pvMap)
 
-      if (Number(self.authInfo.userId)) {
+      if (Number(self.loginInfo.userId)) {
         let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
         if (self.isAttention) {
           url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
@@ -45,8 +45,8 @@ export default{
           data: {
             userId: self.newsData.userid,
             _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-            pcpopclub: self.authInfo.userAuth,
-            autohomeua: self.authInfo.userAgent
+            pcpopclub: self.loginInfo.userAuth,
+            autohomeua: self.loginInfo.userAgent
           },
           dataType: 'json',
           success: function (res, xml) {

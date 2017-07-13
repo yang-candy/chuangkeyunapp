@@ -8,7 +8,7 @@
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
-          <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :authInfo="authInfo"></follow-toggle>
+          <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
           <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
@@ -52,7 +52,7 @@ export default {
       followId: '',
       lastpageid: '',
       urlUserId: util.getParam('userId'),
-      authInfo: {}, // 当前用户的信息（登录者）
+      loginInfo: {}, // 当前用户的信息（登录者）
       followBarList: [],
       followList: []
     }
@@ -98,7 +98,7 @@ export default {
           })
         } else {
           util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
-            self.authInfo = user
+            self.loginInfo = user
             self.isLoad = true
             self.getFollowMoreList()
           })
@@ -113,11 +113,11 @@ export default {
         data: {
           userCategoryId: self.followId,
           size: 20,
-          au: self.authInfo.userAuth || '',
+          au: self.loginInfo.userAuth || '',
           lastId: self.lastpageid || ''
         },
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           self.isLoad = false
           self.isEmpty = !res.result.users.length
@@ -134,7 +134,7 @@ export default {
             'pagename': 'chejiahao_allbigvlist_page',
             'isdata': self.followList.length ? 1 : 0,
             'reportjson': {
-              'userid#1': self.authInfo.userId || 0
+              'userid#1': self.loginInfo.userId || 0
             }
           }
           util.chejiahaoPv(pvMap)
@@ -145,7 +145,7 @@ export default {
     getLocalDataForFollow: function () {
       let self = this
       // 未登录
-      if (!Number(self.authInfo.userId)) {
+      if (!Number(self.loginInfo.userId)) {
         try {
           util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
             // 本地数据有
@@ -168,6 +168,7 @@ export default {
     },
     // tab切换
     tabClick: function (id, index) {
+      self.isLoad = false
       this.isEmpty = false
       this.followList = []
       this.navIndex = index
@@ -210,7 +211,7 @@ export default {
       }
     },
     toAuthorPage: function (e, news) {
-      func.toAuthorPage(e, news.userid, this.authInfo.userId)
+      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     }
   }
 }

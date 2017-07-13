@@ -1,6 +1,5 @@
 <template>
   <div class="c-wp" v-scroll="getMore">
-    <top-load-more :afterPull="loadTop" :beforePull="loadTop">
     <div class="js-follow-more" slot="list">
       <a class="c-att-more" v-if="!isV" @click.stop="toFollowMore">
         <span></span> 关注更多
@@ -10,7 +9,7 @@
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)">
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
 
-          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :authInfo="authInfo" v-if="isV"></follow-toggle>
+          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" v-if="isV"></follow-toggle>
 
           <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
@@ -31,20 +30,17 @@
         <p>加载中...</p>
       </div>
     </div>
-    </top-load-more>
   </div>
 </template>
 <script>
 import * as func from '../api/index.js'
 import * as util from '../api/util.js'
 import followToggle from '../components/followToggle'
-import topLoadMore from '../components/topLoadMore'
 
 export default {
   name: 'myFollow',
   components: {
-    followToggle,
-    topLoadMore
+    followToggle
   },
   data: function () {
     return {
@@ -60,7 +56,7 @@ export default {
       lastpageid: '',
       urlUserId: util.getParam('userId'),
       mobileType: util.mobileType() === 'iOS' ? 1 : 2,
-      authInfo: {}, // 当前用户的信息（登录者
+      loginInfo: {}, // 当前用户的信息（登录者
       followList: [],
       localData: []
     }
@@ -84,9 +80,6 @@ export default {
     }
   },
   methods: {
-    loadTop () {
-      console.log('test')
-    },
     init () {
       const self = this
       // 判断是否联网
@@ -97,11 +90,11 @@ export default {
           self.getLocalDataNoNet()
         } else {
           util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
-            self.authInfo = user
-            if (Number(self.authInfo.userId)) {
+            self.loginInfo = user
+            if (Number(self.loginInfo.userId)) {
               // 已登录
               const opt = {
-                au: self.authInfo.userAuth
+                au: self.loginInfo.userAuth
               }
               self.getFollow(opt)
             } else {
@@ -208,7 +201,7 @@ export default {
             'pagename': 'chejiahao_myattention_page',
             'isdata': res.result.vuserlist.length ? 1 : 0,
             'reportjson': {
-              'userid#1': self.authInfo.userId || 0
+              'userid#1': self.loginInfo.userId || 0
             }
           }
           util.chejiahaoPv(pvMap)
@@ -268,14 +261,14 @@ export default {
         return
       }
       // 已登录
-      if (Number(this.authInfo.userId)) {
+      if (Number(this.loginInfo.userId)) {
         // 取网络数据
         // 传lastpageid分页
         if (this.isloadmore) {
           this.isLoad = true
 
           let opt = {
-            au: this.authInfo.userAuth
+            au: this.loginInfo.userAuth
           }
           this.getFollow(opt)
         } else {
@@ -309,7 +302,7 @@ export default {
       e.target.src = ''
     },
     toAuthorPage (e, news) {
-      func.toAuthorPage(e, news.userid, this.authInfo.userId)
+      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     },
     toFollowMore () {
       util.callNative('ClientViewManager', 'pushViewController', {

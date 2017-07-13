@@ -128,12 +128,11 @@ export function isCreatePlayer (fn) {
 }
 
 export function createMedia (e, news, media, pageType) {
-  // e.stopPropagation()
   if (news.status !== 0 && news.status !== 1) {
     return
   }
-  util.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
-    let isNet = state.result
+  util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+    const isNet = state.result
     // 未联网
     if (!Number(isNet)) {
       util.callNative('ClientViewManager', 'showToastView', {
