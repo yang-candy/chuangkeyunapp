@@ -41,7 +41,10 @@ li
   list-style-type none
   &:focus
     background none
-   
+    
+img[lazy=loading]
+  width 100%
+  
 .c-wp
   height 100%
   display flex
@@ -196,6 +199,19 @@ li
 .c-media-qing
   -webkit-line-clamp 2
   
+.c-media-big
+  position relative
+  width 100%
+  overflow hidden
+  padding-top 56.25%
+  height 0
+  img
+    width 100%
+    background url(./assets/default.jpg)center no-repeat
+    background-size 100% 100%
+    position absolute
+    margin-top -56.25%
+ 
 .c-media-content
   img
     width 100%

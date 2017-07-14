@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import * as util from '../api/util.js'
+import * as util from '../util/util.js'
 
 export default{
   props: ['attention', 'newsData', 'loginInfo', 'objecttypeid', 'noAttention'],
@@ -20,22 +20,21 @@ export default{
   },
   methods: {
     followToggle (e) {
-      const self = this
-      let pvMap = {
+      const pvMap = {
         'eventid': 'chejiahao_cancelorattention_click',
         'pagename': 'chejiahao_cancelorattention',
         'reportjson': {
-          'userid#1': self.loginInfo.userId || 0, // loginId
-          'typeid#2': !self.isAttention ? '1' : '2',
-          'userid2#3': self.newsData.userid || 0,
-          'objecttypeid#4': self.objecttypeid || ''
+          'userid#1': this.loginInfo.userId || 0, // loginId
+          'typeid#2': !this.isAttention ? '1' : '2',
+          'userid2#3': this.newsData.userid || 0,
+          'objecttypeid#4': this.objecttypeid || ''
         }
       }
       util.chejiahaoPv(pvMap)
 
-      if (Number(self.loginInfo.userId)) {
+      if (Number(this.loginInfo.userId)) {
         let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-        if (self.isAttention) {
+        if (this.isAttention) {
           url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
         }
         util.ajax({
@@ -43,23 +42,23 @@ export default{
           type: 'POST',
           isJson: true,
           data: {
-            userId: self.newsData.userid,
+            userId: this.newsData.userid,
             _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-            pcpopclub: self.loginInfo.userAuth,
-            autohomeua: self.loginInfo.userAgent
+            pcpopclub: this.loginInfo.userAuth,
+            autohomeua: this.loginInfo.userAgent
           },
           dataType: 'json',
-          success: function (res, xml) {
+          success: (res, xml) => {
             res = JSON.parse(res)
             if (res.result) {
-              if (!self.isAttention) {
-                self.isAttention = 1
+              if (!this.isAttention) {
+                this.isAttention = 1
                 util.callNative('ClientViewManager', 'showToastView', {
                   type: 1,
                   msg: '关注成功'
                 })
               } else {
-                self.isAttention = 0
+                this.isAttention = 0
                 util.callNative('ClientViewManager', 'showToastView', {
                   type: 1,
                   msg: '取消关注成功'
@@ -67,36 +66,36 @@ export default{
               }
             }
           },
-          fail: function (status) {
+          fail: (status) => {
             console.log('失败，请重试')
           }
         })
       } else {
-        let url = !self.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+        let url = !this.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
         let post = {
-          userid: self.newsData.userid
+          userid: this.newsData.userid
         }
-        if (!self.isAttention) {
+        if (!this.isAttention) {
           post = {
-            imgurl: self.newsData.userpic || '',
-            time: self.newsData.usertime || '',
-            userid: self.newsData.userid || '',
-            username: self.newsData.username || '',
-            title: self.newsData.title || '',
-            description: self.newsData.userdesc || ''
+            imgurl: this.newsData.userpic || '',
+            time: this.newsData.usertime || '',
+            userid: this.newsData.userid || '',
+            username: this.newsData.username || '',
+            title: this.newsData.title || '',
+            description: this.newsData.userdesc || ''
           }
         }
 
-        util.callNative('ClientDataManager', url, post, function (result) {
+        util.callNative('ClientDataManager', url, post, (result) => {
           if (result.result) {
-            if (!self.isAttention) {
-              self.isAttention = 1
+            if (!this.isAttention) {
+              this.isAttention = 1
               util.callNative('ClientViewManager', 'showToastView', {
                 type: 1,
                 msg: '关注成功'
               })
             } else {
-              self.isAttention = 0
+              this.isAttention = 0
               util.callNative('ClientViewManager', 'showToastView', {
                 type: 1,
                 msg: '取消关注成功'

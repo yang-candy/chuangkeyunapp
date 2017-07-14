@@ -20,7 +20,7 @@
               <p>{{item.title}}</p>
               <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
-            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+            <div class="c-media-content c-media-big" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
               <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
 
@@ -75,8 +75,8 @@
 </template>
 
 <script>
-import * as func from '../api/index.js'
-import * as util from '../api/util.js'
+import * as func from '../util/index.js'
+import * as util from '../util/util.js'
 import zanAndComment from '../components/zanAndComment'
 import followToggle from '../components/followToggle'
 import topLoadMore from '../components/topLoadMore'
@@ -88,10 +88,9 @@ export default {
     followToggle,
     topLoadMore
   },
-  data: function () {
+  data () {
     return {
       defaultData: {
-        navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
       tabIndex: 0,
@@ -101,44 +100,19 @@ export default {
       isloadmore: 0,
       pageType: 3,
       lastpageid: '',
-      topStatus: '',
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
       newsList: []
     }
   },
-  computed: {
-    getMedia: function () {
-      return this.media
-    }
-  },
-  mounted: function () {
-    let self = this
-
-    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
-      // 未联网
-      if (!Number(data.result)) {
-        util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
-          util.callNative('ClientViewManager', 'showLoadingView')
-          self.setTabBar()
-        })
-      } else {
-        util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
-          self.loginInfo = user
-          self.setTabBar()
-        })
-      }
-    })
-    self.deleteMediaWatch()
-  },
   directives: { // 自定义指令
     scroll: {
-      bind: function (el, binding) {
-        window.addEventListener('scroll', function () {
-          let offsetHeight = window.innerHeight
-          let scrollHeight = document.body.scrollHeight
-          let scrollTop = document.body.scrollTop
+      bind (el, binding) {
+        window.addEventListener('scroll', () => {
+          const offsetHeight = window.innerHeight
+          const scrollHeight = document.body.scrollHeight
+          const scrollTop = document.body.scrollTop
           if ((scrollTop + offsetHeight) >= scrollHeight) {
             let fnc = binding.value
             fnc()
@@ -146,6 +120,23 @@ export default {
         })
       }
     }
+  },
+  mounted () {
+    util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
+      // 未联网
+      if (!Number(data.result)) {
+        util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+          util.callNative('ClientViewManager', 'showLoadingView')
+          this.setTabBar()
+        })
+      } else {
+        util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+          this.loginInfo = user
+          this.setTabBar()
+        })
+      }
+    })
+    this.deleteMediaWatch()
   },
   methods: {
     beforePull () {
@@ -159,82 +150,101 @@ export default {
         }
       }, 1500)
     },
-    setTabBar: function () {
-      let self = this
-      util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, function (index) {
-        self.isLoad = false
-        self.isEmpty = false
+    setTabBar () {
+      util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
+        this.isLoad = false
+        this.isEmpty = false
+        this.newsList = []
+        this.lastpageid = ''
         document.body.scrollTop = 0
-        self.tabIndex = Number(index.index)
-        self.newsList = []
-        self.lastpageid = ''
-
-        func.deleteMedia(self.media)
-        self.getPageList()
+        this.tabIndex = Number(index.index)
+        func.deleteMedia(this.media)
+        this.getPageList(Number(index.index))
       })
     },
-    getPageList: function () {
-      let self = this
-      let pid = self.lastpageid || ''
+    getPageList (index) {
+      let pid = this.lastpageid || ''
+      index = index || this.tabIndex
       util.ajax({
         url: util.api.npnewlistfortagid,
         type: 'GET',
         data: {
           pm: util.mobileType() === 'iOS' ? 1 : 2,
           tagid: util.getParam('tagid'),
-          au: self.loginInfo.userAuth,
+          au: this.loginInfo.userAuth,
           pid: pid,
           pagesize: 20,
           otype: 0,
-          itype: self.tabIndex || 0
+          itype: this.tabIndex || 0
         },
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
+          if (Number(this.tabIndex) !== Number(index)) {
+            return
+          }
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
-          self.isLoad = false
-          self.hasReFresh = false
+          this.isLoad = false
           if (!res.result) {
             return
           }
           if (res.result.newslist.length) {
-            self.newsList = [...self.newsList, ...res.result.newslist]
+            this.newsList = [...this.newsList, ...res.result.newslist]
           }
-          self.isEmpty = !res.result.newslist.length
-          self.isloadmore = res.result.isloadmore || ''
-          self.lastpageid = res.result.lastid || ''
-          if (self.newsList.length) {
-            self.getLocalDataForFollow()
+          this.isEmpty = !res.result.newslist.length
+          this.isloadmore = res.result.isloadmore || ''
+          this.lastpageid = res.result.lastid || ''
+          if (this.newsList.length) {
+            this.getLocalDataForFollow()
           }
-          let pvMap = {
+          const pvMap = {
             'eventid': 'chejiahao_tag_list_page_pv',
             'pagename': 'chejiahao_tag_list_page',
             'isdata': res.result.newslist.length ? 1 : 0,
             'reportjson': {
-              'userid1#1': self.loginInfo.userId || 0,
+              'userid1#1': this.loginInfo.userId || 0,
               'objectid#2': util.getParam('tagid')
             }
           }
           util.chejiahaoPv(pvMap)
         },
-        fail: function (status) {
-          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+        fail: (status) => {
+          this.isLoad = false
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.getPageList()
+            this.getPageList()
           })
         }
       })
     },
-    getLocalDataForFollow: function () {
-      let self = this
+    getLs (key) {
+      if (!key) return
+      var value = window.localStorage.getItem(key)
+      return JSON.parse(value)
+    },
+    getLocalDataForFollow () {
       // 未登录
-      if (!Number(self.loginInfo.userId)) {
+      if (!Number(this.loginInfo.userId)) {
         try {
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          // 判断赞
+          const likes = this.getLs('tagliked')
+          if (likes.length) {
+            likes.map((j) => {
+              this.newsList.map((v) => {
+                if (j === v['newsid']) {
+                  v['zaned'] = 1
+                } else {
+                  v['zaned'] = 0
+                }
+              })
+            })
+          }
+
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
             // 本地数据有
             if (follow.result.length) {
-              follow.result.map(function (v) {
-                self.newsList.map(function (j) {
+              follow.result.map((v) => {
+                this.newsList.map((j) => {
                   if (Number(v['userId']) === Number(j['userid'])) {
                     j['isattention'] = '1'
                   }
@@ -245,14 +255,14 @@ export default {
         } catch (e) {}
       }
     },
-    resize: function (e) {
+    resize (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
     },
-    loadError: function (e) {
+    loadError (e) {
       e.target.onerror = null
       e.target.src = ''
     },
-    createMedia: function (e, news) {
+    createMedia (e, news) {
       let curTarget = e.currentTarget
       this.media = {
         mediaWidth: curTarget.offsetWidth,
@@ -266,24 +276,24 @@ export default {
       }
       func.createMedia(e, news, this.media, this.pageType)
     },
-    deleteMediaWatch: function () {
-      var self = this
-      window.addEventListener('scroll', function () {
-        let offsetHeight = window.innerHeight
-        let scrollTop = document.body.scrollTop
-        if (self.media.mediaStatus) {
-          if ((self.media.mediaHeight + self.media.mediaY) < scrollTop || (self.media.mediaY - offsetHeight > scrollTop)) {
-            self.media.mediaStatus = false
-            if (self.media.mediaType === 3) {
+    deleteMediaWatch () {
+      window.addEventListener('scroll', () => {
+        const offsetHeight = window.innerHeight
+        const scrollTop = document.body.scrollTop
+        const titleHeight = 40
+        if (this.media.mediaStatus) {
+          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
+            this.media.mediaStatus = false
+            if (this.media.mediaType === 3) {
               util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: self.media.mediaId
+                mediaid: this.media.mediaId
               })
             }
           }
         }
       })
     },
-    getMore: function () {
+    getMore () {
       if (!this.isLoad) {
         func.deleteMedia(this.media)
         if (this.isloadmore) {
@@ -292,8 +302,8 @@ export default {
         }
       }
     },
-    scaleQingImg: function (e, news, index) {
-      let data = {
+    scaleQingImg (e, news, index) {
+      const data = {
         index: index,
         newsid: news.newsid,
         pics: news.pics,
@@ -303,11 +313,11 @@ export default {
       }
       func.scaleQingImg(e, data)
     },
-    toAuthorPage: function (e, news) {
+    toAuthorPage (e, news) {
       func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     },
-    toArticleDetail: function (e, item, index) {
-      let data = {
+    toArticleDetail (e, item, index) {
+      const data = {
         loginId: this.loginInfo.userId,
         newsId: item.newsid,
         mediaId: item.mediaid,
@@ -316,18 +326,6 @@ export default {
       }
       func.toArticleDetail(e, data)
     }
-    // beforePull () {
-    //   func.deleteMedia(this.media)
-    // },
-    // refresh () {
-    //   return new Promise((resolve, reject) => {
-    //     this.getPageList()
-    //     setTimeout(() => {
-    //       func.deleteMedia(this.media)
-    //       resolve()
-    //     }, 1200)
-    //   })
-    // }
   }
 }
 </script>

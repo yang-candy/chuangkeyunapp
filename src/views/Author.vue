@@ -1,6 +1,6 @@
 <template>
   <!-- <keep-alive></keep-alive>>   -->
-  <div class="c-wp c-author">
+  <div class="c-wp c-author" v-if="isLoaded">
     <div class="c-auth-top">
       <div class="c-auth-bg">
         <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
@@ -26,7 +26,7 @@
       </div>
     </div>
     <div class="c-tab-list">
-      <ul class="c-tab-title js-td c-auth-tab">
+      <ul class="c-tab-title js-td c-auth-tab" ref="tabBar">
         <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick($event, index)">{{item}}</li>
       </ul>
 
@@ -48,7 +48,7 @@
               <p>{{item.title}}</p>
               <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
-            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+            <div class="c-media-content c-media-big" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
               <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
             </div>
 
@@ -101,8 +101,8 @@
 </template>
 
 <script>
-import * as func from '../api/index.js'
-import * as util from '../api/util.js'
+import * as func from '../util/index.js'
+import * as util from '../util/util.js'
 import zanAndComment from '../components/zanAndComment'
 
 export default {
@@ -110,16 +110,16 @@ export default {
   components: {
     zanAndComment
   },
-  data: function () {
+  data () {
     return {
       defaultData: {
         navBar: ['动态', '长文', '轻文', '视频', '音频'],
-        // navIndex: 0,
         navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
       tabIndex: 0,
       hasRequest: false,
+      isLoaded: false,
       isLoad: false,
       isEmpty: false,
       isAuthor: true,
@@ -137,8 +137,8 @@ export default {
   },
   directives: { // 自定义指令
     scroll: {
-      bind: function (el, binding) {
-        window.addEventListener('scroll', function () {
+      bind (el, binding) {
+        window.addEventListener('scroll', () => {
           let offsetHeight = window.innerHeight
           let scrollHeight = document.body.scrollHeight
           let scrollTop = document.body.scrollTop
@@ -151,7 +151,7 @@ export default {
     }
   },
   mounted () {
-    util.callNative('ClientDataManager', 'getNetworkState', {}, function (data) {
+    util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
       // 未联网
       if (!Number(data.result)) {
         util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
@@ -171,12 +171,11 @@ export default {
     this.deleteMediaWatch()
   },
   methods: {
-    getPageInfo () {
-      const self = this
-      let pid = self.lastpageid || ''
-      let dt = (self.urlUserId !== self.loginInfo.userId) ? 2 : 3
-      let vuserid = self.urlUserId || ''
-
+    getPageInfo (index) {
+      let pid = this.lastpageid || ''
+      let dt = (this.urlUserId !== this.loginInfo.userId) ? 2 : 3
+      let vuserid = this.urlUserId || ''
+      index = index || this.tabIndex
       util.ajax({
         url: util.api.newListforvuser,
         type: 'GET',
@@ -184,66 +183,67 @@ export default {
           pm: util.mobileType() === 'iOS' ? 1 : 2,
           dt: dt, // 主客页区分  主页3，客页2
           vuserid: vuserid,
-          au: self.loginInfo.userAuth,
+          au: this.loginInfo.userAuth,
           pid: pid,
           pagesize: 20,
           otype: 0,
-          itype: self.tabIndex || 0
+          itype: this.tabIndex || 0
         },
         dataType: 'json',
         success: (res, xml) => {
+          if (Number(this.tabIndex) !== Number(index)) {
+            return
+          }
           res = JSON.parse(res)
-          self.isLoad = false
-          setTimeout(function () {
+          this.isLoad = false
+          this.isLoaded = true
+          setTimeout(() => {
             util.callNative('ClientViewManager', 'hideLoadingView')
           }, 1500)
           if (res.result.newslist.length) {
-            self.newsList = [...self.newsList, ...res.result.newslist]
+            this.newsList = [...this.newsList, ...res.result.newslist]
           }
           if (res.result.userinfo && res.result.userinfo.userpic) {
             res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
-            if (!self.hasRequest) {
-              self.userInfo = res.result.userinfo
-              self.shareInfo = res.result.shareinfo
+            if (!this.hasRequest) {
+              this.userInfo = res.result.userinfo
+              this.shareInfo = res.result.shareinfo
+              this.isAttention = res.result.userinfo.isattention
+              this.getLocalDataForFollow()
+              this.setImgWithBlur()
+              this.navBarWatch()
             }
-            self.isAttention = res.result.userinfo.isattention
-            self.getLocalDataForFollow()
           }
-          if (!self.hasRequest) {
-            self.setImgWithBlur()
-            self.navBarWatch()
-          }
-          self.isEmpty = !res.result.newslist.length
-          self.isloadmore = res.result.isloadmore || ''
-          self.lastpageid = res.result.lastid || ''
-          self.hasRequest = true
+          this.isEmpty = !res.result.newslist.length
+          this.isloadmore = res.result.isloadmore || ''
+          this.lastpageid = res.result.lastid || ''
+          this.hasRequest = true
 
           const pvMap = {
-            'eventid': self.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
-            'pagename': self.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
+            'eventid': this.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
+            'pagename': this.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
             'isdata': res.result.userinfo ? 1 : 0,
             'reportjson': {
-              'userid1#1': self.loginInfo.userId || 0,
-              'userid2#2': self.urlUserId || 0
+              'userid1#1': this.loginInfo.userId || 0,
+              'userid2#2': this.urlUserId || 0
             }
           }
           util.chejiahaoPv(pvMap)
         },
-        fail: function (status) {
+        fail: (status) => {
         }
       })
     },
     getLocalDataForFollow () {
-      const self = this
       // 未登录
-      if (!Number(self.loginInfo.userId)) {
+      if (!Number(this.loginInfo.userId)) {
         try {
           util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
             // 本地数据有
             if (follow.result.length) {
-              follow.result.map(function (v) {
-                if (v['userId'] === Number(self.urlUserId)) {
-                  self.isAttention = 1
+              follow.result.map((v) => {
+                if (v['userId'] === Number(this.urlUserId)) {
+                  this.isAttention = 1
                 }
               })
             }
@@ -263,34 +263,31 @@ export default {
     },
     // 删除相应的信息
     deleteNew (item, index, e) {
-      const self = this
-
       util.ajax({
         url: util.api.deleteForUserSelf,
         type: 'POST',
         isJson: true,
         data: {
           _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-          pcpopclub: self.loginInfo.userAuth,
+          pcpopclub: this.loginInfo.userAuth,
           // autohomeua: user.userAgent,
           infoId: item.newsid
         },
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           if (res.result === 1) {
-            func.deleteMedia(self.media)
-            self.newsList.splice(index, 1)
-            self.isEmpty = !self.newsList.length
+            func.deleteMedia(this.media)
+            this.newsList.splice(index, 1)
+            this.isEmpty = !this.newsList.length
           }
         },
-        fail: function (status) {}
+        fail: (status) => {}
       })
     },
     // 高斯模糊设置
     setImgWithBlur () {
-      let self = this
-      let opt = {
+      const opt = {
         url: this.userInfo.userpic,
         set: {
           radius: util.mobileType() === 'iOS' ? 10 : 30,
@@ -301,20 +298,19 @@ export default {
       }
 
       util.callNative('ClientImageManager', 'getImageWithBlur', opt, (result) => {
-        self.userInfo.bgimg = 'data:image/jpeg;base64,' + result.result
+        this.userInfo.bgimg = 'data:image/jpeg;base64,' + result.result
       })
     },
     // 监听顶部导航
     navBarWatch (data) {
-      const self = this
       let isScrollIn = false
       let isScrollOut = false
 
       this.setNavBar({})
       window.addEventListener('scroll', () => {
         let $scrollTop = document.body.scrollTop
-        let $titleHeight = self.$refs.authTitle.clientHeight
-        let $offsetTop = self.$refs.authTitle.offsetTop
+        let $titleHeight = this.$refs.authTitle.clientHeight
+        let $offsetTop = this.$refs.authTitle.offsetTop
         let icon1 = {
           icon1: '',
           icon1_p: ''
@@ -323,8 +319,8 @@ export default {
         if ($scrollTop >= ($offsetTop + $titleHeight)) {
           isScrollIn = false
           info = {
-            imgurl: self.userInfo.userpic,
-            title: self.userInfo.name,
+            imgurl: this.userInfo.userpic,
+            title: this.userInfo.name,
             icon2: 'articleplatform_icon_share',
             icon2_p: 'articleplatform_icon_share_p',
             navigationbacktype: 1,
@@ -332,7 +328,7 @@ export default {
             alpha: 1
           }
 
-          let type = self.isAttention ? 1 : 0
+          let type = this.isAttention ? 1 : 0
           icon1 = {
             icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
@@ -340,20 +336,19 @@ export default {
 
           if (!isScrollOut) {
             isScrollOut = true
-            self.setNavBar(info)
+            this.setNavBar(info)
           }
         } else {
           isScrollOut = false
           if (!isScrollIn) {
             isScrollIn = true
-            self.setNavBar(info)
+            this.setNavBar(info)
           }
         }
-        self.setRightIcon(icon1)
+        this.setRightIcon(icon1)
       })
     },
     setRightIcon (icon, flag) {
-      let self = this
       let shareInfo = this.shareInfo
       if (!this.isAuthor) {
         let $scrollTop = document.body.scrollTop
@@ -370,7 +365,7 @@ export default {
           righticons: icon
         }, (result) => {
           if (result.result === 'icon2') {
-            let opt = {
+            const opt = {
               share: {
                 url: shareInfo.shareurl || '',
                 title: shareInfo.sharetitle || '',
@@ -380,13 +375,13 @@ export default {
               },
               pagetype: 5,
               sharepositiontype: 44,
-              objectid: self.urlUserId
+              objectid: this.urlUserId
             }
             util.callNative('ClientShareManager', 'shareAction', opt)
           } else {
-            const type = self.isAttention ? 1 : 0
+            const type = this.isAttention ? 1 : 0
             const icon1 = true
-            self.followToggle(null, type, icon1)
+            this.followToggle(null, type, icon1)
           }
         })
       }
@@ -408,13 +403,13 @@ export default {
         alpha: info.alpha || 0
       })
 
-      let statusBarStyle = (info.statusBarStyle === 0) ? 0 : 1
+      const statusBarStyle = (info.statusBarStyle === 0) ? 0 : 1
       util.callNative('ClientViewManager', 'setStatusBarStyle', {
         statusBarStyle: statusBarStyle
       })
 
       if (!this.isAuthor) {
-        let icon2 = {
+        const icon2 = {
           icon2: info.icon2 || 'articleplatform_icon_share_w',
           icon2_p: info.icon2_p || 'articleplatform_icon_share_w_p'
         }
@@ -438,11 +433,11 @@ export default {
     // tab切换
     tabClick (e, index) {
       this.isEmpty = false
-      self.isLoad = false
+      this.isLoad = false
       this.newsList = []
       this.lastpageid = ''
       this.tabIndex = index
-      this.getPageInfo()
+      this.getPageInfo(index)
     },
     resize (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
@@ -466,16 +461,16 @@ export default {
       func.createMedia(e, news, this.media, this.pageType)
     },
     deleteMediaWatch () {
-      var self = this
       window.addEventListener('scroll', () => {
         const offsetHeight = window.innerHeight
         const scrollTop = document.body.scrollTop
-        if (self.media.mediaStatus) {
-          if ((self.media.mediaHeight + self.media.mediaY) < scrollTop || (self.media.mediaY - offsetHeight > scrollTop)) {
-            self.media.mediaStatus = false
-            if (self.media.mediaType === 3) {
+        const titleHeight = this.$refs.tabBar.clientHeight
+        if (this.media.mediaStatus) {
+          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
+            this.media.mediaStatus = false
+            if (this.media.mediaType === 3) {
               util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: self.media.mediaId
+                mediaid: this.media.mediaId
               })
             }
           }
@@ -554,7 +549,7 @@ export default {
         width 100%
         border 1px solid rgba(238,238,238,.3)
         border-radius 50%
-        background url(../assets/pic_head.png) no-repeat
+        // background url(../assets/pic_head.png) no-repeat
         background-color #fff
         background-size 100% 100%
         background-clip padding-box

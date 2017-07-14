@@ -12,11 +12,12 @@ FastClick.attach(document.body)
 
 // image lazy load setting
 import VueLazyload from 'vue-lazyload'
+import imageList from './util/image.js'
 Vue.use(VueLazyload, {
   preLoad: 16/9,
-  error: require('./assets/default.jpg'),
-  loading: require('./assets/default.jpg'),
-  attempt: 1,
+  error: imageList.defaultImg,
+  loading: imageList.defaultImg,
+  attempt: 3,
   filter: {
     progressive (listener) {
       if (listener.el.getAttribute('imgType')) {
@@ -26,16 +27,16 @@ Vue.use(VueLazyload, {
       const imgType = listener.el.getAttribute('imgType')
       switch (imgType) {
         case 'head':
-          listener.loading = listener.error = require('./assets/pic_head.png')
+          listener.loading = listener.error = imageList.picHead
           break
         case 'headBg':
-          listener.loading = listener.error = require('./assets/navbar_bg.png')
+          listener.loading = listener.error = imageList.navbarBg
           break
         case 'audio':
-          listener.loading = listener.error = require('./assets/audio_default.png')
+          listener.loading = listener.error = imageList.audioDefault
           break
         default:
-          listener.loading = listener.error = require('./assets/default.jpg')
+          listener.loading = listener.error = imageList.defaultImg
           break
       }
     }

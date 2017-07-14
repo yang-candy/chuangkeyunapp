@@ -12,11 +12,11 @@
 </template>
 
 <script>
-import * as util from '../api/util.js'
+import * as util from '../util/util.js'
 
 export default{
   props: ['newsData', 'user'],
-  data: function () {
+  data () {
     return {
       hasZan: false,
       isAddZan: false,
@@ -24,14 +24,14 @@ export default{
     }
   },
   computed: {
-    news: function () {
+    news () {
       return this.newsData
     }
   },
   methods: {
-    chijiaohaoZanPv: function () {
+    chijiaohaoZanPv () {
       // click埋点
-      let pvMap = {
+      const pvMap = {
         'eventid': 'chejiahao_praise_click',
         'pagename': 'chejiahao_praise',
         'reportjson': {
@@ -42,9 +42,9 @@ export default{
       }
       util.chejiahaoPv(pvMap)
     },
-    tagCommon: function () {
+    tagCommon () {
       // pv
-      let pvMap = {
+      const pvMap = {
         'eventid': 'chejiahao_comment_click',
         'pagename': 'chejiahao_comment',
         'reportjson': {
@@ -66,38 +66,32 @@ export default{
         }
       })
     },
-    likeZan: function () {
-      let self = this
-      // if (self.hasZan) {
-      //   return
-      // }
-
-      if (!self.user.userId) {
+    likeZan () {
+      if (!this.user.userId) {
         util.callNative('ClientViewManager', 'login', {}, (res) => {
           if (res.result === 1) {
-            self.zanHandler(self)
+            this.zanHandler(this)
           }
         })
       } else {
-        self.zanHandler(self)
+        this.zanHandler(this)
       }
     },
-    zanHandler: function () {
-      let self = this
-      self.hasZan = true
-      self.isAddZan = true
-      self.news.praisenum++
+    zanHandler () {
+      this.hasZan = true
+      this.isAddZan = true
+      this.news.praisenum++
 
-      self.chijiaohaoZanPv()
-      setTimeout(function () {
-        self.isAddZan = false
+      this.chijiaohaoZanPv()
+      setTimeout(() => {
+        this.isAddZan = false
       }, 1000)
 
       // 记录点赞
-      self.likesLocal.push(self.news.newsid)
-      self.setLs('tagliked', self.likesLocal)
+      this.likesLocal.push(this.news.newsid)
+      this.setLs('tagliked', this.likesLocal)
 
-      util.callNative('ClientDataManager', 'getSystemConstant', {}, function (follow) {
+      util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
           type: 'POST',
@@ -106,33 +100,28 @@ export default{
             appid: '21',
             _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
             liketype: '1',
-            objid: self.news.newsid,
+            objid: this.news.newsid,
             secobj: '',
             sessionid: follow.uniqueDeviceIMEI,
-            autohomeua: self.user.userAgent,
-            authorization: self.user.userAuth,
+            autohomeua: this.user.userAgent,
+            authorization: this.user.userAuth,
             extdata: ''
           },
           dataType: 'json',
-          success: function (res, xml) {
-            self.hasZan = true
+          success: (res, xml) => {
+            this.hasZan = true
           },
-          fail: function (status) {
-            self.hasZan = false
+          fail: (status) => {
+            this.hasZan = false
           }
         })
       })
     },
     // 保存到localStorage
-    setLs: function (key, value) {
+    setLs (key, value) {
       if (!key) return
       value = (typeof value === 'string') ? value : JSON.stringify(value)
       window.localStorage.setItem(key, value)
-    },
-    getLs: function (key) {
-      if (!key) return
-      var value = window.localStorage.getItem(key)
-      return JSON.parse(value)
     }
   }
 }

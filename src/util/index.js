@@ -282,9 +282,6 @@ export function toAuthorPage (e, userId, loginId) {
   util.chejiahaoPv(pvMap)
 }
 
-export function author2 (e, self) {
-}
-
 export function toArticleDetail (e, news) {
   let media = {
     mediaId: news.mediaId,

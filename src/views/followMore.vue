@@ -2,7 +2,7 @@
   <div class="c-wp">
     <div class="c-att-fixed">
       <ul class="c-att-bar">
-        <li :class="{on: navIndex === index}" v-for="(item, index) in followBarList" @click.stop="tabClick(item.id, index)">{{item.name}}</li>
+        <li :class="{on: tabIndex === index}" v-for="(item, index) in followBarList" @click.stop="tabClick(item.id, index)">{{item.name}}</li>
       </ul> 
     </div>
     <div class="c-att-more-list" @scroll="getMore">
@@ -29,8 +29,8 @@
   </div>
 </template>
 <script>
-import * as func from '../api/index.js'
-import * as util from '../api/util.js'
+import * as func from '../util/index.js'
+import * as util from '../util/util.js'
 import followToggle from '../components/followToggle'
 
 export default {
@@ -38,13 +38,12 @@ export default {
   components: {
     followToggle
   },
-  data: function () {
+  data () {
     return {
       defaultData: {
-        navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
-      navIndex: 0,
+      tabIndex: 0,
       isLoad: false,
       isEmpty: false,
       isNet: true,
@@ -63,95 +62,94 @@ export default {
   },
   methods: {
     getNavBar () {
-      const self = this
       util.ajax({
         url: util.api.getCategoryList,
         type: 'GET',
         data: {},
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
 
           if (res.result.length) {
-            self.followBarList = res.result
-            self.followId = self.followBarList[0].id
-            self.getFollowMore(self.followBarList[0].id, 0)
+            this.followBarList = res.result
+            this.followId = this.followBarList[0].id
+            this.getFollowMore()
           }
         },
-        fail: function (status) {
-          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+        fail: (status) => {
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.getNavBar()
+            this.getNavBar()
           })
         }
       })
     },
-    getFollowMore () {
-      const self = this
-      util.callNative('ClientDataManager', 'getNetworkState', {}, function (state) {
-        self.isNet = state.result
-        if (!Number(self.isNet)) {
-          util.callNative('ClientViewManager', 'loadingFailed', {}, function () {
+    getFollowMore (index) {
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        this.isNet = state.result
+        if (!Number(this.isNet)) {
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.getNavBar()
+            this.getNavBar()
           })
         } else {
-          util.callNative('ClientDataManager', 'getUserInfo', {}, function (user) {
-            self.loginInfo = user
-            self.isLoad = true
-            self.getFollowMoreList()
+          util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+            this.loginInfo = user
+            this.getFollowMoreList(index)
           })
         }
       })
     },
-    getFollowMoreList () {
-      const self = this
+    getFollowMoreList (index) {
+      index = index || this.tabIndex
       util.ajax({
         url: util.api.getUserPageByCategory,
         type: 'GET',
         data: {
-          userCategoryId: self.followId,
+          userCategoryId: this.followId,
           size: 20,
-          au: self.loginInfo.userAuth || '',
-          lastId: self.lastpageid || ''
+          au: this.loginInfo.userAuth || '',
+          lastId: this.lastpageid || ''
         },
         dataType: 'json',
         success: (res, xml) => {
+          if (Number(this.tabIndex) !== Number(index)) {
+            return
+          }
           res = JSON.parse(res)
-          self.isLoad = false
-          self.isEmpty = !res.result.users.length
-          self.isloadMore = res.result.loadMore
+          this.isLoad = false
+          this.isEmpty = !res.result.users.length
+          this.isloadMore = res.result.loadMore
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.users.length) {
-            self.lastpageid = res.result.lastId
-            self.followList = [...self.followList, ...res.result.users]
-            self.getLocalDataForFollow()
+            this.lastpageid = res.result.lastId
+            this.followList = [...this.followList, ...res.result.users]
+            this.getLocalDataForFollow()
           }
           // 添加pv
-          let pvMap = {
+          const pvMap = {
             'eventid': 'chejiahao_allbigvlist_page_pv',
             'pagename': 'chejiahao_allbigvlist_page',
-            'isdata': self.followList.length ? 1 : 0,
+            'isdata': res.result.users.length ? 1 : 0,
             'reportjson': {
-              'userid#1': self.loginInfo.userId || 0
+              'userid#1': this.loginInfo.userId || 0
             }
           }
           util.chejiahaoPv(pvMap)
         },
-        fail: function (status) {}
+        fail: (status) => {}
       })
     },
-    getLocalDataForFollow: function () {
-      let self = this
+    getLocalDataForFollow () {
       // 未登录
-      if (!Number(self.loginInfo.userId)) {
+      if (!Number(this.loginInfo.userId)) {
         try {
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, function (follow) {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
             // 本地数据有
             if (follow.result.length) {
-              follow.result.map(function (v) {
-                self.followList.map(function (j, i) {
+              follow.result.map((v) => {
+                this.followList.map((j) => {
                   if (v['userId'] === j['userid']) {
                     j['isattention'] = 1
                   }
@@ -162,22 +160,21 @@ export default {
         } catch (e) {}
       }
     },
-    loadError: function (e) {
+    loadError (e) {
       e.target.onerror = null
       e.target.src = ''
     },
     // tab切换
-    tabClick: function (id, index) {
-      self.isLoad = false
+    tabClick (id, index) {
+      this.isLoad = false
       this.isEmpty = false
       this.followList = []
-      this.navIndex = index
+      this.tabIndex = index
       this.followId = id
       this.lastpageid = ''
-      this.getFollowMore()
+      this.getFollowMore(index)
     },
-    getMore: function (e) {
-      const self = this
+    getMore (e) {
       const $target = e.currentTarget
       const $scrollHeight = $target.scrollHeight
       const $height = $target.clientHeight
@@ -189,28 +186,28 @@ export default {
         }
       }
       if ($height + $scrollTop >= $scrollHeight) {
-        if (!Number(self.isNet)) {
-          if (!self.isLoad) {
-            self.isLoad = true
+        if (!Number(this.isNet)) {
+          if (!this.isLoad) {
+            this.isLoad = true
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
               top: 'topNavTop'
-            }, function () {
-              self.isLoad = false
+            }, () => {
+              this.isLoad = false
             })
           }
         } else {
-          if (!self.isLoad) {
-            if (self.isloadMore) {
-              self.isLoad = true
-              self.getFollowMoreList(self.followId, self.navIndex)
+          if (!this.isLoad) {
+            if (this.isloadMore) {
+              this.isLoad = true
+              this.getFollowMoreList()
             } else {
-              self.isLoad = false
+              this.isLoad = false
             }
           }
         }
       }
     },
-    toAuthorPage: function (e, news) {
+    toAuthorPage (e, news) {
       func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     }
   }

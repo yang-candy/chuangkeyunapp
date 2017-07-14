@@ -33,8 +33,8 @@
   </div>
 </template>
 <script>
-import * as func from '../api/index.js'
-import * as util from '../api/util.js'
+import * as func from '../util/index.js'
+import * as util from '../util/util.js'
 import followToggle from '../components/followToggle'
 
 export default {
@@ -42,10 +42,9 @@ export default {
   components: {
     followToggle
   },
-  data: function () {
+  data () {
     return {
       defaultData: {
-        navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
       isLoad: false,
@@ -61,16 +60,13 @@ export default {
       localData: []
     }
   },
-  mounted () {
-    this.init()
-  },
   directives: { // 自定义指令
     scroll: {
-      bind: function (el, binding) {
-        window.addEventListener('scroll', function () {
-          let offsetHeight = window.innerHeight
-          let scrollHeight = document.body.scrollHeight
-          let scrollTop = document.body.scrollTop
+      bind (el, binding) {
+        window.addEventListener('scroll', () => {
+          const offsetHeight = window.innerHeight
+          const scrollHeight = document.body.scrollHeight
+          const scrollTop = document.body.scrollTop
           if ((scrollTop + offsetHeight) >= scrollHeight) {
             let fnc = binding.value
             fnc()
@@ -79,26 +75,28 @@ export default {
       }
     }
   },
+  mounted () {
+    this.init()
+  },
   methods: {
     init () {
-      const self = this
       // 判断是否联网
       util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
         this.isNet = state.result
         // 未联网
         if (!Number(this.isNet)) {
-          self.getLocalDataNoNet()
+          this.getLocalDataNoNet()
         } else {
           util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
-            self.loginInfo = user
-            if (Number(self.loginInfo.userId)) {
+            this.loginInfo = user
+            if (Number(this.loginInfo.userId)) {
               // 已登录
               const opt = {
-                au: self.loginInfo.userAuth
+                au: this.loginInfo.userAuth
               }
-              self.getFollow(opt)
+              this.getFollow(opt)
             } else {
-              self.getLocalDataNet()
+              this.getLocalDataNet()
             }
           })
         }
@@ -107,65 +105,62 @@ export default {
     // 无网
     getLocalDataNoNet () {
       // 未联网
-      let self = this
       util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
-        self.localData = follow.result
-        if (self.localData.length) {
-          self.isV = false
-          self.localData.map(function (i, item) {
+        this.localData = follow.result
+        if (this.localData.length) {
+          this.isV = false
+          this.localData.map(function (i, item) {
             item.userid = item.userId
             item.userpic = item.imgurl
             item.createtime = item.time
             item.username = item.userName
             if (i < 20) {
-              self.followList.push(item)
+              this.followList.push(item)
             }
           })
         } else {
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.init()
+            this.init()
           })
         }
       })
     },
     // 有网未登录
     getLocalDataNet () {
-      let self = this
       util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
-        self.localData = follow.result
+        this.localData = follow.result
         // 本地数据有
-        if (self.localData.length) {
+        if (this.localData.length) {
           let ids = []
           // vm.data.localData = follow.result;
-          self.localData.map(function (v) {
+          this.localData.map(function (v) {
             ids.push(v.userId)
           })
           const opt = {
             vids: ids.toString()
           }
-          self.getFollow(opt)
-          self.isV = false
+          this.getFollow(opt)
+          this.isV = false
         } else {
-          self.getV()
+          this.getV()
         }
       })
     },
     // 获取已关注作者列表
     getFollow (opt) {
-      const self = this
       let postData = {}
       if (opt.au) {
         postData = {
-          pm: self.mobileType,
+          pm: this.mobileType,
           dt: 1,
-          pid: self.lastpageid || '',
+          pid: this.lastpageid || '',
           pagesize: 10,
           au: opt.au
         }
       } else {
         postData = {
-          pm: self.mobileType,
+          pm: this.mobileType,
           dt: 1,
           vids: opt.vids
         }
@@ -175,23 +170,24 @@ export default {
         type: 'GET',
         data: postData,
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
 
-          self.isloadmore = res.result.isloadmore || ''
-          self.lastpageid = res.result.lastpageid || ''
+          this.isloadmore = res.result.isloadmore || ''
+          this.lastpageid = res.result.lastpageid || ''
+          this.isEmpty = !res.result.vuserlist.length
           if (res.result.vuserlist.length) {
-            self.isV = false
-            self.isLoad = false
-            self.followList = [...self.followList, ...res.result.vuserlist]
+            this.isV = false
+            this.isLoad = false
+            this.followList = [...this.followList, ...res.result.vuserlist]
           } else {
             // 已登录本地数据没有
             if (opt.au) {
-              self.isLoad = true
-              self.getV(opt.au)
+              this.isLoad = true
+              this.getV(opt.au)
             } else {
-              self.isEmpty = true
+              this.isEmpty = true
             }
           }
 
@@ -201,18 +197,18 @@ export default {
             'pagename': 'chejiahao_myattention_page',
             'isdata': res.result.vuserlist.length ? 1 : 0,
             'reportjson': {
-              'userid#1': self.loginInfo.userId || 0
+              'userid#1': this.loginInfo.userId || 0
             }
           }
           util.chejiahaoPv(pvMap)
         },
-        fail: function (status) {
-          if (self.localData.length) {
-            self.isV = false
+        fail: (status) => {
+          if (this.localData.length) {
+            this.isV = false
           } else {
             util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
               util.callNative('ClientViewManager', 'showLoadingView')
-              self.init()
+              this.init()
             })
           }
         }
@@ -220,31 +216,30 @@ export default {
     },
     // 获取大V列表
     getV (au) {
-      const self = this
       util.ajax({
         url: util.api.npgetvuserlist,
         type: 'GET',
         data: {
-          pm: self.mobileType,
+          pm: this.mobileType,
           dt: 0,
           au: au || ''
         },
         dataType: 'json',
-        success: function (res, xml) {
+        success: (res, xml) => {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
-          self.isLoad = false
+          this.isLoad = false
           if (res.result.vuserlist.length) {
-            self.followList = res.result.vuserlist
-            self.isV = true
+            this.followList = res.result.vuserlist
+            this.isV = true
           } else {
-            self.isEmpty = true
+            this.isEmpty = true
           }
         },
-        fail: function (status) {
+        fail: (status) => {
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            self.init()
+            this.init()
           })
         }
       })
@@ -289,9 +284,8 @@ export default {
     },
     // 本地上拉翻页
     localNextPage () {
-      this.isLoad = true
       this.localIndex++
-      this.localData.map(function (i, v) {
+      this.localData.map((i, v) => {
         if (i < ((this.localIndex + 1) * 19) && (i >= this.localIndex * 19)) {
           this.followList.push(v)
         }
