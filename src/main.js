@@ -18,6 +18,11 @@ Vue.use(VueLazyload, {
   error: imageList.defaultImg,
   loading: imageList.defaultImg,
   attempt: 3,
+  adapter: {
+    loading (listener) {
+      listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
+    }
+  },
   filter: {
     progressive (listener) {
       if (listener.el.getAttribute('imgType')) {

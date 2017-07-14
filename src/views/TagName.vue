@@ -18,10 +18,10 @@
             </div>
             <div class="c-media-content c-media-long" :class="{'c-media-qing': item.mediatype === 1}" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
-              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
-            <div class="c-media-content c-media-big" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="" @load="resize($event)">
+            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
@@ -29,13 +29,12 @@
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
                 v-lazy="img" 
-                @load="resize($event)" 
                 @click="scaleQingImg($event, item, imgIndex)"
               >
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" @load="resize($event)">
+              <img class="c-auth-info-img" v-lazy="item.thumbnailpics[0]">
               <span class="media-video-btn"></span>
               <span class="c-media-time">{{item.playtime}}</span>
             </div>
