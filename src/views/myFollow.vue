@@ -178,7 +178,7 @@ export default {
           this.lastpageid = res.result.lastpageid || ''
           this.isEmpty = !res.result.vuserlist.length
           if (res.result.vuserlist.length) {
-            this.isV = false
+            this.isV = true
             this.isLoad = false
             this.followList = [...this.followList, ...res.result.vuserlist]
           } else {
@@ -345,5 +345,11 @@ export default {
     background url(../assets/follow.png) no-repeat
     background-size 100%
     vertical-align -2px
-  
+    
+.c-att-title-f
+  margin-top .35rem
+  margin-bottom .6rem
+  line-height 0.85rem
+  & + .c-att-info
+    margin-right 1.85rem
 </style>

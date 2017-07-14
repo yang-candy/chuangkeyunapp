@@ -164,7 +164,7 @@ export default{
   .c-num
     position absolute
     top -5px
-    left 16px
+    left 17px
     line-height 1
     color #4C92FB
     font-size .5rem

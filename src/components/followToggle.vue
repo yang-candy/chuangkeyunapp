@@ -67,7 +67,11 @@ export default{
             }
           },
           fail: (status) => {
-            console.log('失败，请重试')
+            const msg = !this.isAttention ? '关注失败' : '取消关注失败'
+            ApiBridge.callNative('ClientViewManager', 'showToastView', {
+              type: 2,
+              msg: msg
+            })
           }
         })
       } else {
