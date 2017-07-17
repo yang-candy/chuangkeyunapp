@@ -20,7 +20,9 @@ Vue.use(VueLazyload, {
   attempt: 3,
   adapter: {
     loading (listener) {
-      listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
+      if (listener.el.getAttribute('imgType') === 'audio' || listener.el.getAttribute('imgType') === 'article') {
+        listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
+      }
     }
   },
   filter: {
@@ -39,6 +41,9 @@ Vue.use(VueLazyload, {
           break
         case 'audio':
           listener.loading = listener.error = imageList.audioDefault
+          break
+        case 'article':
+          listener.loading = listener.error = imageList.defaultImg
           break
         default:
           listener.loading = listener.error = imageList.defaultImg
