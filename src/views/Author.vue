@@ -431,9 +431,13 @@ export default {
     tabClick (e, index) {
       this.isEmpty = false
       this.isLoad = false
+      if (this.tabIndex === index) {
+        return
+      }
       this.newsList = []
       this.lastpageid = ''
       this.tabIndex = index
+      func.deleteMedia(this.media)
       this.getPageInfo(index)
     },
     resize (e) {

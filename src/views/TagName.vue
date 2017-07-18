@@ -153,6 +153,9 @@ export default {
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
         this.isLoad = false
         this.isEmpty = false
+        if (this.tabIndex === Number(index.index)) {
+          return
+        }
         this.newsList = []
         this.lastpageid = ''
         document.body.scrollTop = 0

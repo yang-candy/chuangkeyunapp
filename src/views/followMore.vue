@@ -168,6 +168,9 @@ export default {
     tabClick (id, index) {
       this.isLoad = false
       this.isEmpty = false
+      if (this.tabIndex === index) {
+        return
+      }
       this.followList = []
       this.tabIndex = index
       this.followId = id
