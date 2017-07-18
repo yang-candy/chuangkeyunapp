@@ -196,13 +196,11 @@ export default {
           res = JSON.parse(res)
           this.isLoad = false
           this.isLoaded = true
-          setTimeout(() => {
-            util.callNative('ClientViewManager', 'hideLoadingView')
-          }, 1500)
+          util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.newslist.length) {
             this.newsList = [...this.newsList, ...res.result.newslist]
           }
-          if (res.result.userinfo && res.result.userinfo.userpic) {
+          if (res.result.userinfo) {
             res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
             if (!this.hasRequest) {
               this.userInfo = res.result.userinfo
