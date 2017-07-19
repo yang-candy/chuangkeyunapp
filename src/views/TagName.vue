@@ -316,6 +316,7 @@ export default {
       func.scaleQingImg(e, data)
     },
     toAuthorPage (e, news) {
+      func.deleteMedia(this.media)
       func.toAuthorPage(e, news.userid, this.loginInfo.userId)
     },
     toArticleDetail (e, item, index) {

@@ -20,6 +20,7 @@ Vue.use(VueLazyload, {
   attempt: 3,
   adapter: {
     loading (listener) {
+      // debugger
       if (listener.el.getAttribute('imgType') === 'audio' || listener.el.getAttribute('imgType') === 'article') {
         listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
       }

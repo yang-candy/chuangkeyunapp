@@ -1,6 +1,6 @@
 <template>
   <!-- <keep-alive></keep-alive>>   -->
-  <div class="c-wp c-author" v-if="isLoaded">
+  <div class="c-wp c-author" v-show="isLoaded">
     <div class="c-auth-top">
       <div class="c-auth-bg">
         <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
@@ -32,9 +32,9 @@
 
       <div ref="jsTb" class="c-tab-bd js-tb" v-scroll="getMore">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
+          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
-              <div class="c-media-info">
+              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
                 <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg" alt="">
                 <p class="c-auth-title">{{userInfo.name}}</p>
               </div>
@@ -123,15 +123,16 @@ export default {
       isEmpty: false,
       isAuthor: true,
       isAttention: 0,
-      isloadmore: 0,
       pageType: 4,
-      lastpageid: '',
       urlUserId: util.getParam('userId'),
+      isloadmore: [0, 0, 0, 0, 0],
+      lastpageid: ['', '', '', '', ''],
       loginInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
       media: {},
-      newsList: []
+      dataList: [],
+      newsList: [[], [], [], [], []]
     }
   },
   directives: { // 自定义指令
@@ -171,7 +172,7 @@ export default {
   },
   methods: {
     getPageInfo (index) {
-      let pid = this.lastpageid || ''
+      let pid = this.lastpageid[this.tabIndex] || ''
       let dt = (this.urlUserId !== this.loginInfo.userId) ? 2 : 3
       let vuserid = this.urlUserId || ''
       index = index || this.tabIndex
@@ -198,7 +199,9 @@ export default {
           this.isLoaded = true
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.newslist.length) {
-            this.newsList = [...this.newsList, ...res.result.newslist]
+            // this.$set(this.newsList, this.tabIndex, this.newsList[this.tabIndex].concat(res.result.newslist))
+            this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
+            this.dataList = this.newsList[this.tabIndex]
           }
           if (res.result.userinfo) {
             res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
@@ -211,9 +214,9 @@ export default {
               this.navBarWatch()
             }
           }
-          this.isEmpty = !res.result.newslist.length
-          this.isloadmore = res.result.isloadmore || ''
-          this.lastpageid = res.result.lastid || ''
+          this.isEmpty = !this.newsList[this.tabIndex].length
+          this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
+          this.lastpageid[this.tabIndex] = res.result.lastid || ''
           this.hasRequest = true
 
           const pvMap = {
@@ -275,8 +278,8 @@ export default {
           res = JSON.parse(res)
           if (res.result === 1) {
             func.deleteMedia(this.media)
-            this.newsList.splice(index, 1)
-            this.isEmpty = !this.newsList.length
+            this.newsList[this.tabIndex].splice(index, 1)
+            this.isEmpty = !this.newsList[this.tabIndex].length
           }
         },
         fail: (status) => {}
@@ -429,16 +432,23 @@ export default {
     },
     // tab切换
     tabClick (e, index) {
+      this.dataList = []
       this.isEmpty = false
       this.isLoad = false
       if (this.tabIndex === index) {
         return
       }
-      this.newsList = []
-      this.lastpageid = ''
+      // this.newsList = []
+      // this.lastpageid = ''
       this.tabIndex = index
       func.deleteMedia(this.media)
-      this.getPageInfo(index)
+      setTimeout(() => {
+        if (!this.newsList[this.tabIndex].length) {
+          this.getPageInfo(index)
+        } else {
+          this.dataList = this.newsList[this.tabIndex]
+        }
+      }, 0)
     },
     resize (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
@@ -481,7 +491,7 @@ export default {
     getMore () {
       if (!this.isLoad) {
         func.deleteMedia(this.media)
-        if (this.isloadmore) {
+        if (this.isloadmore[this.tabIndex]) {
           this.isLoad = true
           this.getPageInfo()
         }
@@ -499,7 +509,7 @@ export default {
       func.scaleQingImg(e, data)
     },
     toAuthorPage (e, news) {
-      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
+      return
     },
     toArticleDetail (e, item, index) {
       const data = {
