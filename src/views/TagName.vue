@@ -5,7 +5,7 @@
     <div class="c-tab-list" slot="list">
       <div ref="jsTb" class="c-tab-bd js-tb">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
+          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
@@ -96,13 +96,15 @@ export default {
       hasReFresh: false,
       isLoad: false,
       isEmpty: false,
-      isloadmore: 0,
+      isFirst: false,
       pageType: 3,
-      lastpageid: '',
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
-      newsList: []
+      isloadmore: [0, 0, 0, 0, 0],
+      lastpageid: ['', '', '', '', ''],
+      dataList: [],
+      newsList: [[], [], [], [], []]
     }
   },
   directives: { // 自定义指令
@@ -126,11 +128,13 @@ export default {
       if (!Number(data.result)) {
         util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
           util.callNative('ClientViewManager', 'showLoadingView')
+          this.isFirst = true
           this.setTabBar()
         })
       } else {
         util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
           this.loginInfo = user
+          this.isFirst = true
           this.setTabBar()
         })
       }
@@ -151,21 +155,32 @@ export default {
     },
     setTabBar () {
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
-        this.isLoad = false
-        this.isEmpty = false
-        if (this.tabIndex === Number(index.index)) {
+        if (this.tabIndex === Number(index.index) && !this.isFirst) {
           return
         }
-        this.newsList = []
-        this.lastpageid = ''
+        this.isLoad = false
+        this.isEmpty = false
+        this.isFirst = false
+        this.dataList = []
+        // this.newsList = []
+        // this.lastpageid = ''
         document.body.scrollTop = 0
         this.tabIndex = Number(index.index)
         func.deleteMedia(this.media)
-        this.getPageList(Number(index.index))
+        // this.getPageList(Number(index.index))
+
+        setTimeout(() => {
+          if (!this.newsList[this.tabIndex].length) {
+            // this.getPageInfo(index)
+            this.getPageList(Number(index.index))
+          } else {
+            this.dataList = this.newsList[this.tabIndex]
+          }
+        }, 0)
       })
     },
     getPageList (index) {
-      let pid = this.lastpageid || ''
+      let pid = this.lastpageid[this.tabIndex] || ''
       index = index || this.tabIndex
       util.ajax({
         url: util.api.npnewlistfortagid,
@@ -191,12 +206,13 @@ export default {
             return
           }
           if (res.result.newslist.length) {
-            this.newsList = [...this.newsList, ...res.result.newslist]
+            this.newsList[this.tabIndex] = [...this.newsList[this.tabIndex], ...res.result.newslist]
+            this.dataList = this.newsList[this.tabIndex]
           }
           this.isEmpty = !res.result.newslist.length
-          this.isloadmore = res.result.isloadmore || ''
-          this.lastpageid = res.result.lastid || ''
-          if (this.newsList.length) {
+          this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
+          this.lastpageid[this.tabIndex] = res.result.lastid || ''
+          if (this.dataList.length) {
             this.getLocalDataForFollow()
           }
           const pvMap = {
@@ -232,7 +248,7 @@ export default {
           const likes = this.getLs('tagliked')
           if (likes.length) {
             likes.map((j) => {
-              this.newsList.map((v) => {
+              this.dataList.map((v) => {
                 if (j === v['newsid']) {
                   v['zaned'] = 1
                 } else {
@@ -246,7 +262,7 @@ export default {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map((v) => {
-                this.newsList.map((j) => {
+                this.dataList.map((j) => {
                   if (Number(v['userId']) === Number(j['userid'])) {
                     j['isattention'] = '1'
                   }
@@ -298,7 +314,7 @@ export default {
     getMore () {
       if (!this.isLoad) {
         func.deleteMedia(this.media)
-        if (this.isloadmore) {
+        if (this.isloadmore[this.tabIndex]) {
           this.isLoad = true
           this.getPageList()
         }

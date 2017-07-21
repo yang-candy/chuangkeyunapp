@@ -50,7 +50,7 @@ export default{
           dataType: 'json',
           success: (res, xml) => {
             res = JSON.parse(res)
-            if (res.result) {
+            if (res.returncode === 0 && res.result === 1) {
               if (!this.isAttention) {
                 this.isAttention = 1
                 util.callNative('ClientViewManager', 'showToastView', {
@@ -64,6 +64,12 @@ export default{
                   msg: '取消关注成功'
                 })
               }
+            } else {
+              const msg = !this.isAttention ? '关注失败' : '取消关注失败'
+              ApiBridge.callNative('ClientViewManager', 'showToastView', {
+                type: 2,
+                msg: msg
+              })
             }
           },
           fail: (status) => {

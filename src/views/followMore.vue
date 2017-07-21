@@ -7,7 +7,7 @@
     </div>
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
-        <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)"> 
+        <li v-for="(item, index) in dataList" @click.stop="toAuthorPage($event, item)"> 
           <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
           <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
@@ -47,13 +47,14 @@ export default {
       isLoad: false,
       isEmpty: false,
       isNet: true,
-      isloadMore: false,
       followId: '',
-      lastpageid: '',
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       followBarList: [],
-      followList: []
+      isloadmore: [],
+      lastpageid: [],
+      dataList: [],
+      followList: [[]]
     }
   },
   mounted () {
@@ -74,6 +75,8 @@ export default {
           if (res.result.length) {
             this.followBarList = res.result
             this.followId = this.followBarList[0].id
+            this.followList.length = this.followBarList.length
+            this.followList.fill([])
             this.getFollowMore()
           }
         },
@@ -110,7 +113,7 @@ export default {
           userCategoryId: this.followId,
           size: 20,
           au: this.loginInfo.userAuth || '',
-          lastId: this.lastpageid || ''
+          lastId: this.lastpageid[this.tabIndex] || ''
         },
         dataType: 'json',
         success: (res, xml) => {
@@ -120,11 +123,13 @@ export default {
           res = JSON.parse(res)
           this.isLoad = false
           this.isEmpty = !res.result.users.length
-          this.isloadMore = res.result.loadMore
+          this.isloadmore[this.tabIndex] = res.result.loadMore || false
+          this.lastpageid[this.tabIndex] = res.result.lastId || ''
+          console.log(this.lastpageid[this.tabIndex], this.isloadmore[this.tabIndex])
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.users.length) {
-            this.lastpageid = res.result.lastId
-            this.followList = [...this.followList, ...res.result.users]
+            this.followList[this.tabIndex] = [...this.followList[this.tabIndex], ...res.result.users]
+            this.dataList = this.followList[this.tabIndex]
             this.getLocalDataForFollow()
           }
           // 添加pv
@@ -149,7 +154,7 @@ export default {
             // 本地数据有
             if (follow.result.length) {
               follow.result.map((v) => {
-                this.followList.map((j) => {
+                this.dataList.map((j) => {
                   if (v['userId'] === j['userid']) {
                     j['isattention'] = 1
                   }
@@ -171,11 +176,18 @@ export default {
       if (this.tabIndex === index) {
         return
       }
-      this.followList = []
+      this.dataList = []
       this.tabIndex = index
       this.followId = id
-      this.lastpageid = ''
-      this.getFollowMore(index)
+      setTimeout(() => {
+        if (!this.followList[this.tabIndex].length) {
+          this.followList[this.tabIndex] = []
+          this.getFollowMore(index)
+        } else {
+          this.dataList = this.followList[this.tabIndex]
+        }
+      }, 0)
+      // this.getFollowMore(index)
     },
     getMore (e) {
       const $target = e.currentTarget
@@ -200,7 +212,7 @@ export default {
           }
         } else {
           if (!this.isLoad) {
-            if (this.isloadMore) {
+            if (this.isloadmore) {
               this.isLoad = true
               this.getFollowMoreList()
             } else {

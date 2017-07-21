@@ -125,12 +125,12 @@ export default {
       isAttention: 0,
       pageType: 4,
       urlUserId: util.getParam('userId'),
-      isloadmore: [0, 0, 0, 0, 0],
-      lastpageid: ['', '', '', '', ''],
       loginInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
       media: {},
+      isloadmore: [0, 0, 0, 0, 0],
+      lastpageid: ['', '', '', '', ''],
       dataList: [],
       newsList: [[], [], [], [], []]
     }
@@ -270,7 +270,6 @@ export default {
         data: {
           _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
           pcpopclub: this.loginInfo.userAuth,
-          // autohomeua: user.userAgent,
           infoId: item.newsid
         },
         dataType: 'json',
@@ -278,8 +277,15 @@ export default {
           res = JSON.parse(res)
           if (res.result === 1) {
             func.deleteMedia(this.media)
-            this.newsList[this.tabIndex].splice(index, 1)
-            this.isEmpty = !this.newsList[this.tabIndex].length
+            if (this.tabIndex) {
+              this.newsList[0].map((item2, index2) => {
+                if (item2.newsid === item.newsid) {
+                  this.newsList[0].splice(index2, 1)
+                }
+              })
+            }
+            this.dataList.splice(index, 1)
+            this.isEmpty = !this.dataList.length
           }
         },
         fail: (status) => {}
@@ -432,12 +438,12 @@ export default {
     },
     // tab切换
     tabClick (e, index) {
-      this.dataList = []
       this.isEmpty = false
       this.isLoad = false
       if (this.tabIndex === index) {
         return
       }
+      this.dataList = []
       // this.newsList = []
       // this.lastpageid = ''
       this.tabIndex = index

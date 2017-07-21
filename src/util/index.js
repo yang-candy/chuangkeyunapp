@@ -32,7 +32,7 @@ export function followToggle (e, type, info, icon1, target) {
       success: function (res, xml) {
         res = JSON.parse(res)
         // res.result = 1
-        if (res.result) {
+        if (res.returncode === 0 && res.result === 1) {
           if ((icon1) || (/author/.test(window.location.href))) {
             icon1 = {
               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
@@ -53,6 +53,12 @@ export function followToggle (e, type, info, icon1, target) {
               msg: '取消关注成功'
             })
           }
+        } else {
+          const msg = !type ? '关注失败' : '取消关注失败'
+          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            type: 2,
+            msg: msg
+          })
         }
       },
       fail: function (status) {
