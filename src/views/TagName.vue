@@ -164,7 +164,7 @@ export default {
         this.dataList = []
         // this.newsList = []
         // this.lastpageid = ''
-        document.body.scrollTop = 0
+        // document.body.scrollTop = 0
         this.tabIndex = Number(index.index)
         func.deleteMedia(this.media)
         // this.getPageList(Number(index.index))
