@@ -4,16 +4,18 @@
     <top-load-more :afterPull="afterPull" :beforePull="beforePull">
     <div class="c-tab-list" slot="list">
       <div ref="jsTb">
-        <ul class="c-tab-ul">
-          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
+        <news-card :dataList="dataList" :loginInfo="loginInfo" :noAttention="true" :objecttypeid="2"></news-card>
+        <!-- <ul class="c-tab-ul">
+          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail(item, index)">
             <div class="c-media-item">
-              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
+              <div class="c-media-info" @click.stop="toAuthorPage(item)">
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
               <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
-            </div>
-            <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
+            </div> -->
+            <!-- <news-card :item="item" :loginInfo="loginInfo"></news-card> -->
+            <!-- <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
               {{item.mediatype === 2 ? item.description : item.title}}
             </div>
             <div class="c-media-content c-media-long" :class="{'c-media-qing': item.mediatype === 1}" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
@@ -55,10 +57,10 @@
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
               <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
-            </div>
+            </div> -->
             
-          </li>
-        </ul>
+          <!-- </li>
+        </ul> -->
       </div>
       <div class="c-loading" v-show="isLoad">
         <span class="loading-icon"></span> 
@@ -76,16 +78,18 @@
 <script>
 import * as func from '../util/index.js'
 import * as util from '../util/util.js'
-import zanAndComment from '../components/zanAndComment'
+// import zanAndComment from '../components/zanAndComment'
 import followToggle from '../components/followToggle'
 import topLoadMore from '../components/topLoadMore'
+import newsCard from '../components/newsCard'
 
 export default {
   name: 'tagName',
   components: {
-    zanAndComment,
+    // zanAndComment,
     followToggle,
-    topLoadMore
+    topLoadMore,
+    newsCard
   },
   data () {
     return {
@@ -281,7 +285,7 @@ export default {
       e.target.src = ''
     },
     createMedia (e, news) {
-      let curTarget = e.currentTarget
+      const curTarget = e.currentTarget
       this.media = {
         mediaWidth: curTarget.offsetWidth,
         mediaHeight: curTarget.offsetHeight,
@@ -331,11 +335,11 @@ export default {
       }
       func.scaleQingImg(e, data)
     },
-    toAuthorPage (e, news) {
+    toAuthorPage (news) {
       func.deleteMedia(this.media)
-      func.toAuthorPage(e, news.userid, this.loginInfo.userId)
+      func.toAuthorPage(news.userid, this.loginInfo.userId)
     },
-    toArticleDetail (e, item, index) {
+    toArticleDetail (item, index) {
       const data = {
         loginId: this.loginInfo.userId,
         newsId: item.newsid,
@@ -343,7 +347,7 @@ export default {
         mediaType: item.mediatype,
         position: index + 1
       }
-      func.toArticleDetail(e, data)
+      func.toArticleDetail(data)
     }
   }
 }

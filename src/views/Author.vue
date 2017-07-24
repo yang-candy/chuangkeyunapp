@@ -27,14 +27,14 @@
     </div>
     <div class="c-tab-list">
       <ul class="c-tab-title" ref="tabBar">
-        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick($event, index)">{{item}}</li>
+        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick(index)">{{item}}</li>
       </ul>
 
       <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
+          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail(item, index)">
             <div class="c-media-item">
-              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
+              <div class="c-media-info" @click.stop="toAuthorPage(item)">
                 <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg" alt="">
                 <p class="c-auth-title">{{userInfo.name}}</p>
               </div>
@@ -57,7 +57,7 @@
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
                 v-lazy="img" 
-                @click="scaleQingImg($event, item, imgIndex)"
+                @click.stop="scaleQingImg($event, item, imgIndex)"
               >
             </div>
 
@@ -437,7 +437,7 @@ export default {
       func.followToggle(e, type, info, icon1, this)
     },
     // tab切换
-    tabClick (e, index) {
+    tabClick (index) {
       this.isEmpty = false
       this.isLoad = false
       if (this.tabIndex === index) {
@@ -514,10 +514,10 @@ export default {
       }
       func.scaleQingImg(e, data)
     },
-    toAuthorPage (e, news) {
+    toAuthorPage (news) {
       return
     },
-    toArticleDetail (e, item, index) {
+    toArticleDetail (item, index) {
       const data = {
         loginId: this.loginInfo.userId,
         newsId: item.newsid,
@@ -526,7 +526,7 @@ export default {
         position: index + 1
       }
 
-      func.toArticleDetail(e, data)
+      func.toArticleDetail(data)
     }
   }
 }
