@@ -33,34 +33,80 @@ export default{
       util.chejiahaoPv(pvMap)
 
       // 判断是否联网
-      // ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
-      //   if (!Number(state.result)) {
-      //     ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
-      //       top: 'topNavTop'
-      //     })
-      //     return
-      //   }
-      // })
-
-      if (Number(this.loginInfo.userId)) {
-        let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-        if (this.isAttention) {
-          url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+      ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        if (!Number(state.result)) {
+          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            type: 0,
+            msg: '当前网络不可用,请检查网络设置'
+          })
+          return
         }
-        util.ajax({
-          url: url,
-          type: 'POST',
-          isJson: true,
-          data: {
-            userId: this.newsData.userid,
-            _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-            pcpopclub: this.loginInfo.userAuth,
-            autohomeua: this.loginInfo.userAgent
-          },
-          dataType: 'json',
-          success: (res, xml) => {
-            res = JSON.parse(res)
-            if (res.returncode === 0 && res.result === 1) {
+        if (Number(this.loginInfo.userId)) {
+          let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
+          if (this.isAttention) {
+            url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+          }
+          util.ajax({
+            url: url,
+            type: 'POST',
+            isJson: true,
+            data: {
+              userId: this.newsData.userid,
+              _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
+              pcpopclub: this.loginInfo.userAuth,
+              autohomeua: this.loginInfo.userAgent
+            },
+            dataType: 'json',
+            success: (res, xml) => {
+              res = JSON.parse(res)
+              if (res.returncode === 0 && res.result === 1) {
+                if (!this.isAttention) {
+                  this.isAttention = 1
+                  util.callNative('ClientViewManager', 'showToastView', {
+                    type: 1,
+                    msg: '关注成功'
+                  })
+                } else {
+                  this.isAttention = 0
+                  util.callNative('ClientViewManager', 'showToastView', {
+                    type: 1,
+                    msg: '取消关注成功'
+                  })
+                }
+              } else {
+                const msg = !this.isAttention ? '关注失败' : '取消关注失败'
+                ApiBridge.callNative('ClientViewManager', 'showToastView', {
+                  type: 2,
+                  msg: msg
+                })
+              }
+            },
+            fail: (status) => {
+              const msg = !this.isAttention ? '关注失败' : '取消关注失败'
+              ApiBridge.callNative('ClientViewManager', 'showToastView', {
+                type: 2,
+                msg: msg
+              })
+            }
+          })
+        } else {
+          let url = !this.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+          let post = {
+            userid: this.newsData.userid
+          }
+          if (!this.isAttention) {
+            post = {
+              imgurl: this.newsData.userpic || '',
+              time: this.newsData.usertime || '',
+              userid: this.newsData.userid || '',
+              username: this.newsData.username || '',
+              title: this.newsData.title || '',
+              description: this.newsData.userdesc || ''
+            }
+          }
+
+          util.callNative('ClientDataManager', url, post, (result) => {
+            if (result.result) {
               if (!this.isAttention) {
                 this.isAttention = 1
                 util.callNative('ClientViewManager', 'showToastView', {
@@ -74,56 +120,10 @@ export default{
                   msg: '取消关注成功'
                 })
               }
-            } else {
-              const msg = !this.isAttention ? '关注失败' : '取消关注失败'
-              ApiBridge.callNative('ClientViewManager', 'showToastView', {
-                type: 2,
-                msg: msg
-              })
             }
-          },
-          fail: (status) => {
-            const msg = !this.isAttention ? '关注失败' : '取消关注失败'
-            ApiBridge.callNative('ClientViewManager', 'showToastView', {
-              type: 2,
-              msg: msg
-            })
-          }
-        })
-      } else {
-        let url = !this.isAttention ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
-        let post = {
-          userid: this.newsData.userid
+          })
         }
-        if (!this.isAttention) {
-          post = {
-            imgurl: this.newsData.userpic || '',
-            time: this.newsData.usertime || '',
-            userid: this.newsData.userid || '',
-            username: this.newsData.username || '',
-            title: this.newsData.title || '',
-            description: this.newsData.userdesc || ''
-          }
-        }
-
-        util.callNative('ClientDataManager', url, post, (result) => {
-          if (result.result) {
-            if (!this.isAttention) {
-              this.isAttention = 1
-              util.callNative('ClientViewManager', 'showToastView', {
-                type: 1,
-                msg: '关注成功'
-              })
-            } else {
-              this.isAttention = 0
-              util.callNative('ClientViewManager', 'showToastView', {
-                type: 1,
-                msg: '取消关注成功'
-              })
-            }
-          }
-        })
-      }
+      })
     }
   }
 }

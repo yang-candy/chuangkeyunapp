@@ -14,35 +14,88 @@ export function followToggle (e, type, info, icon1, target) {
   util.chejiahaoPv(pvMap)
 
   // 判断是否联网
-  // ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
-  //   if (!Number(state.result)) {
-  //     ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
-  //       top: 'topNavTop'
-  //     })
-  //     return
-  //   }
-  // })
-
-  if (Number(info.loginId)) {
-    let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
-    if (type) {
-      url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+  ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+    if (!Number(state.result)) {
+      ApiBridge.callNative('ClientViewManager', 'showToastView', {
+        type: 0,
+        msg: '当前网络不可用,请检查网络设置'
+      })
+      return
     }
-    util.ajax({
-      url: url,
-      type: 'POST',
-      isJson: true,
-      data: {
-        userId: info.userId,
-        _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
-        pcpopclub: info.userAuth,
-        autohomeua: info.userAgent
-      },
-      dataType: 'json',
-      success: function (res, xml) {
-        res = JSON.parse(res)
-        // res.result = 1
-        if (res.returncode === 0 && res.result === 1) {
+    if (Number(info.loginId)) {
+      let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
+      if (type) {
+        url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/UnFollow'
+      }
+      util.ajax({
+        url: url,
+        type: 'POST',
+        isJson: true,
+        data: {
+          userId: info.userId,
+          _appid: util.mobileType() === 'iOS' ? 'app' : 'app_android',
+          pcpopclub: info.userAuth,
+          autohomeua: info.userAgent
+        },
+        dataType: 'json',
+        success: function (res, xml) {
+          res = JSON.parse(res)
+          // res.result = 1
+          if (res.returncode === 0 && res.result === 1) {
+            if ((icon1) || (/author/.test(window.location.href))) {
+              icon1 = {
+                icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
+                icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
+              }
+              target.setRightIcon(icon1)
+            }
+            if (!type) {
+              target.isAttention = 1
+              util.callNative('ClientViewManager', 'showToastView', {
+                type: 1,
+                msg: '关注成功'
+              })
+            } else {
+              target.isAttention = 0
+              util.callNative('ClientViewManager', 'showToastView', {
+                type: 1,
+                msg: '取消关注成功'
+              })
+            }
+          } else {
+            const msg = !type ? '关注失败' : '取消关注失败'
+            ApiBridge.callNative('ClientViewManager', 'showToastView', {
+              type: 2,
+              msg: msg
+            })
+          }
+        },
+        fail: function (status) {
+          const msg = !type ? '关注失败' : '取消关注失败'
+          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            type: 2,
+            msg: msg
+          })
+        }
+      })
+    } else {
+      let url = !type ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
+      let post = {
+        userid: info.userId
+      }
+      if (!type) {
+        post = {
+          imgurl: info.imgUrl || '',
+          time: info.time || '',
+          userid: info.userId || '',
+          username: info.userName || '',
+          title: info.title || '',
+          description: info.description || ''
+        }
+      }
+
+      util.callNative('ClientDataManager', url, post, function (result) {
+        if (result.result) {
           if ((icon1) || (/author/.test(window.location.href))) {
             icon1 = {
               icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
@@ -63,63 +116,10 @@ export function followToggle (e, type, info, icon1, target) {
               msg: '取消关注成功'
             })
           }
-        } else {
-          const msg = !type ? '关注失败' : '取消关注失败'
-          ApiBridge.callNative('ClientViewManager', 'showToastView', {
-            type: 2,
-            msg: msg
-          })
         }
-      },
-      fail: function (status) {
-        const msg = !type ? '关注失败' : '取消关注失败'
-        ApiBridge.callNative('ClientViewManager', 'showToastView', {
-          type: 2,
-          msg: msg
-        })
-      }
-    })
-  } else {
-    let url = !type ? 'addLocalDataForFollow' : 'deletLocalDataForFollow'
-    let post = {
-      userid: info.userId
+      })
     }
-    if (!type) {
-      post = {
-        imgurl: info.imgUrl || '',
-        time: info.time || '',
-        userid: info.userId || '',
-        username: info.userName || '',
-        title: info.title || '',
-        description: info.description || ''
-      }
-    }
-
-    util.callNative('ClientDataManager', url, post, function (result) {
-      if (result.result) {
-        if ((icon1) || (/author/.test(window.location.href))) {
-          icon1 = {
-            icon1: !type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-            icon1_p: !type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-          }
-          target.setRightIcon(icon1)
-        }
-        if (!type) {
-          target.isAttention = 1
-          util.callNative('ClientViewManager', 'showToastView', {
-            type: 1,
-            msg: '关注成功'
-          })
-        } else {
-          target.isAttention = 0
-          util.callNative('ClientViewManager', 'showToastView', {
-            type: 1,
-            msg: '取消关注成功'
-          })
-        }
-      }
-    })
-  }
+  })
 }
 
 // 根据wifi 判断是否创建播放器
