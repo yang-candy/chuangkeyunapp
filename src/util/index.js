@@ -14,9 +14,9 @@ export function followToggle (e, type, info, icon1, target) {
   util.chejiahaoPv(pvMap)
 
   // 判断是否联网
-  ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+  util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
     if (!Number(state.result)) {
-      ApiBridge.callNative('ClientViewManager', 'showToastView', {
+      util.callNative('ClientViewManager', 'showToastView', {
         type: 0,
         msg: '当前网络不可用,请检查网络设置'
       })
@@ -64,7 +64,7 @@ export function followToggle (e, type, info, icon1, target) {
             }
           } else {
             const msg = !type ? '关注失败' : '取消关注失败'
-            ApiBridge.callNative('ClientViewManager', 'showToastView', {
+            util.callNative('ClientViewManager', 'showToastView', {
               type: 2,
               msg: msg
             })
@@ -72,7 +72,7 @@ export function followToggle (e, type, info, icon1, target) {
         },
         fail: function (status) {
           const msg = !type ? '关注失败' : '取消关注失败'
-          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+          util.callNative('ClientViewManager', 'showToastView', {
             type: 2,
             msg: msg
           })

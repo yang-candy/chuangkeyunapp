@@ -33,9 +33,9 @@ export default{
       util.chejiahaoPv(pvMap)
 
       // 判断是否联网
-      ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
         if (!Number(state.result)) {
-          ApiBridge.callNative('ClientViewManager', 'showToastView', {
+          util.callNative('ClientViewManager', 'showToastView', {
             type: 0,
             msg: '当前网络不可用,请检查网络设置'
           })
@@ -75,7 +75,7 @@ export default{
                 }
               } else {
                 const msg = !this.isAttention ? '关注失败' : '取消关注失败'
-                ApiBridge.callNative('ClientViewManager', 'showToastView', {
+                util.callNative('ClientViewManager', 'showToastView', {
                   type: 2,
                   msg: msg
                 })
@@ -83,7 +83,7 @@ export default{
             },
             fail: (status) => {
               const msg = !this.isAttention ? '关注失败' : '取消关注失败'
-              ApiBridge.callNative('ClientViewManager', 'showToastView', {
+              util.callNative('ClientViewManager', 'showToastView', {
                 type: 2,
                 msg: msg
               })
