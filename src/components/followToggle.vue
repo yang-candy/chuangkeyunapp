@@ -32,6 +32,16 @@ export default{
       }
       util.chejiahaoPv(pvMap)
 
+      // 判断是否联网
+      // ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+      //   if (!Number(state.result)) {
+      //     ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
+      //       top: 'topNavTop'
+      //     })
+      //     return
+      //   }
+      // })
+
       if (Number(this.loginInfo.userId)) {
         let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
         if (this.isAttention) {

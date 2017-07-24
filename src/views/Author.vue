@@ -26,11 +26,11 @@
       </div>
     </div>
     <div class="c-tab-list">
-      <ul class="c-tab-title js-td c-auth-tab" ref="tabBar">
+      <ul class="c-tab-title" ref="tabBar">
         <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick($event, index)">{{item}}</li>
       </ul>
 
-      <div ref="jsTb" class="c-tab-bd js-tb" v-scroll="getMore">
+      <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
           <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
@@ -46,14 +46,14 @@
             </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
             <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-              <img imgType="article" class="c-auth-info-img" alt=""
+              <img imgType="article" alt=""
                 v-for="(img, imgIndex) in item.thumbnailpics"
                 v-if="imgIndex < 3"
                 v-lazy="img" 
@@ -62,14 +62,14 @@
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]">
               <span class="media-video-btn"></span>
               <span class="c-media-time">{{item.playtime}}</span>
             </div>
 
             <div v-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img imgType="audio" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
+                <img imgType="audio" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
               <span>
                 {{item.title}}

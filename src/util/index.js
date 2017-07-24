@@ -1,7 +1,7 @@
 import * as util from './util.js'
 
 export function followToggle (e, type, info, icon1, target) {
-  var pvMap = {
+  const pvMap = {
     'eventid': 'chejiahao_cancelorattention_click',
     'pagename': 'chejiahao_cancelorattention',
     'reportjson': {
@@ -12,6 +12,16 @@ export function followToggle (e, type, info, icon1, target) {
     }
   }
   util.chejiahaoPv(pvMap)
+
+  // 判断是否联网
+  // ApiBridge.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+  //   if (!Number(state.result)) {
+  //     ApiBridge.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
+  //       top: 'topNavTop'
+  //     })
+  //     return
+  //   }
+  // })
 
   if (Number(info.loginId)) {
     let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'

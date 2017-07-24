@@ -3,7 +3,7 @@
   <div class="c-wp" v-scroll="getMore">
     <top-load-more :afterPull="afterPull" :beforePull="beforePull">
     <div class="c-tab-list" slot="list">
-      <div ref="jsTb" class="c-tab-bd js-tb">
+      <div ref="jsTb">
         <ul class="c-tab-ul">
           <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
@@ -18,10 +18,10 @@
             </div>
             <div class="c-media-content c-media-long" :class="{'c-media-qing': item.mediatype === 1}" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
             <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]" alt="">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
 
             <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
@@ -34,7 +34,7 @@
             </div>
 
             <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img imgType="article" class="c-auth-info-img" v-lazy="item.thumbnailpics[0]">
+              <img imgType="article" v-lazy="item.thumbnailpics[0]">
               <span class="media-video-btn"></span>
               <span class="c-media-time">{{item.playtime}}</span>
             </div>
