@@ -73,7 +73,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" @hasZaned="hasZaned"></zan-and-comment>
             </div>
             
           </li>
@@ -256,12 +256,31 @@ export default {
         }
       })
     },
+    hasZaned () {
+      // 判断赞
+      const likes = this.getLs('tagliked')
+      if (likes.length) {
+        likes.map((j) => {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (j['newsid'] === v['newsid']) {
+                  v['hasZan'] = true
+                  v['praisenum'] = j['praisenum']
+                }
+              })
+            }
+          })
+        })
+      }
+    },
     getLs (key) {
       if (!key) return
       var value = window.localStorage.getItem(key)
       return JSON.parse(value)
     },
     getLocalDataForFollow () {
+      this.hasZaned()
       // 未登录
       if (!Number(this.loginInfo.userId)) {
         try {
@@ -277,19 +296,6 @@ export default {
               })
             }
           })
-          // 判断赞
-          const likes = this.getLs('tagliked')
-          if (likes.length) {
-            likes.map((j) => {
-              this.dataList.map((v) => {
-                if (j === v['newsid']) {
-                  v['zaned'] = 1
-                } else {
-                  v['zaned'] = 0
-                }
-              })
-            })
-          }
         } catch (e) {}
       }
     },
@@ -302,6 +308,13 @@ export default {
     },
     followToggle (item, value) {
       item.isattention = value
+      this.newsList.map((news, index) => {
+        news.map((v) => {
+          if (item.userid === v['userid']) {
+            v.isattention = value
+          }
+        })
+      })
     },
     createMedia (e, news) {
       let curTarget = e.currentTarget

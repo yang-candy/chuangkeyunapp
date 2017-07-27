@@ -101,7 +101,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -220,6 +220,7 @@ export default {
           if (res.result.newslist.length) {
             // this.$set(this.newsList, this.tabIndex, this.newsList[this.tabIndex].concat(res.result.newslist))
             this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
+            this.hasZaned()
             this.dataList = this.newsList[this.tabIndex]
           }
           if (res.result.userinfo) {
@@ -258,6 +259,29 @@ export default {
           })
         }
       })
+    },
+    hasZaned (value) {
+      // 判断赞
+      const likes = this.getLs('tagliked')
+      if (likes.length) {
+        likes.map((j) => {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (j['newsid'] === v['newsid']) {
+                  v['hasZan'] = true
+                  v['praisenum'] = j['praisenum']
+                }
+              })
+            }
+          })
+        })
+      }
+    },
+    getLs (key) {
+      if (!key) return
+      var value = window.localStorage.getItem(key)
+      return JSON.parse(value)
     },
     getLocalDataForFollow () {
       // 未登录
