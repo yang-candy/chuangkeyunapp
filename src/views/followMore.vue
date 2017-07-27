@@ -213,7 +213,7 @@ export default {
           window.scrollTop = $docScrollTop
         }
       }
-      if ($height + $scrollTop >= $scrollHeight) {
+      if ($scrollTop && $height + $scrollTop >= $scrollHeight) {
         if (!Number(this.isNet)) {
           if (!this.isLoad) {
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')

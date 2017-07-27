@@ -58,7 +58,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img">
+              <div class="c-media-img" v-show="item.thumbnailpics.length">
                 <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
             </div>
@@ -66,7 +66,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img c-media-qing-more">
+              <div class="c-media-img c-media-qing-more" v-show="item.thumbnailpics.length">
                 <img imgType="article" class="c-auth-info-img c-auth-audio-img" alt=""
                   v-for="(img, imgIndex) in item.thumbnailpics"
                   v-if="imgIndex < 3"
@@ -305,7 +305,7 @@ export default {
       util.callNative('ClientViewManager', 'showDrawerView', {
         names: ['删除']
       }, (result) => {
-        if (result.result === 0) {
+        if (Number(result.result) === 0) {
           this.deleteNew(item, index, e)
         }
       })

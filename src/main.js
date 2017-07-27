@@ -27,6 +27,9 @@ Vue.use(VueLazyload, {
   },
   filter: {
     progressive (listener) {
+      if (!listener.src) {
+        return
+      }
       if (listener.el.getAttribute('imgType')) {
         listener.el.setAttribute('lazy-progressive', 'true')
         listener.loading = listener.src + '?imageView2/1/w/10/h/10'
