@@ -1,6 +1,6 @@
 <template>
   <p class="c-tab-ue">
-    <span class="c-zan" @click.stop.once="likeZan">
+    <span class="c-zan" @click.stop="likeZan">
       <span class="zan-icon" :class="{on: hasZan}"></span>
       <span class="c-add1" v-show="isAddZan">+1</span>
       <span class="c-num">{{news['praisenum']}}</span>
@@ -67,9 +67,12 @@ export default{
       })
     },
     likeZan () {
+      if (this.hasZan) {
+        return
+      }
       if (!this.user.userId) {
         util.callNative('ClientViewManager', 'login', {}, (res) => {
-          if (res.result === 1) {
+          if (Number(res.result) === 1) {
             this.zanHandler(this)
           }
         })
@@ -111,9 +114,7 @@ export default{
           success: (res, xml) => {
             this.hasZan = true
           },
-          fail: (status) => {
-            this.hasZan = false
-          }
+          fail: (status) => {}
         })
       })
     },

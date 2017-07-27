@@ -73,6 +73,7 @@ export default{
                     msg: '取消关注成功'
                   })
                 }
+                this.$emit('followEvent', this.isAttention)
               } else {
                 const msg = !this.isAttention ? '关注失败' : '取消关注失败'
                 util.callNative('ClientViewManager', 'showToastView', {
@@ -120,6 +121,7 @@ export default{
                   msg: '取消关注成功'
                 })
               }
+              this.$emit('followEvent', this.isAttention)
             }
           })
         }

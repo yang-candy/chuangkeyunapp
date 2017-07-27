@@ -11,42 +11,61 @@
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
-              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
+              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" @followEvent="followToggle(item, $event)"></follow-toggle>
             </div>
-            <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
-              {{item.mediatype === 2 ? item.description : item.title}}
-            </div>
-            <div class="c-media-content c-media-long" :class="{'c-media-qing': item.mediatype === 1}" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
+            
+            <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
               <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
-            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+            <div class="c-media-content" v-else-if="item.mediatype === 1 && item.recommendShowBigImg">
+              <div class="c-media-desc">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+              </div>
             </div>
 
-            <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-              <img imgType="article" class="c-auth-info-img c-auth-audio-img" alt=""
-                v-for="(img, imgIndex) in item.thumbnailpics"
-                v-if="imgIndex < 3"
-                v-lazy="img" 
-                @click="scaleQingImg($event, item, imgIndex)"
-              >
+            <div class="c-media-content" v-else-if="item.mediatype === 2 && item.thumbnailpics.length < 3">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+              </div>
             </div>
-
-            <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img imgType="article" v-lazy="item.thumbnailpics[0]">
-              <span class="media-video-btn"></span>
-              <span class="c-media-time">{{item.playtime}}</span>
+            <div class="c-media-content" v-else-if="item.mediatype === 2 && item.thumbnailpics.length >= 3">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img c-media-qing-more">
+                <img imgType="article" class="c-auth-info-img c-auth-audio-img" alt=""
+                  v-for="(img, imgIndex) in item.thumbnailpics"
+                  v-if="imgIndex < 3"
+                  v-lazy="img" 
+                  @click.stop="scaleQingImg(item, imgIndex)"
+                >
+              </div>
             </div>
-
-            <div v-if="item.mediatype === 4" class="c-media-audio">
+            <div v-else-if="item.mediatype === 3" class="c-media-content c-media-video">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img c-media-video" @click.stop="createMedia($event, item)">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]">
+                <span class="media-video-btn"></span>
+                <span class="c-media-time">{{item.playtime}}</span>
+              </div>
+            </div>
+            <div v-else-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
                 <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
               <span>
                 {{item.title}}
               </span>
-            </div>
+            </div>        
 
             <div class="c-media-oper">
               <p>
@@ -126,6 +145,7 @@ export default {
     util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
       // 未联网
       if (!Number(data.result)) {
+        util.callNative('ClientViewManager', 'hideLoadingView')
         util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
           util.callNative('ClientViewManager', 'showLoadingView')
           this.isFirst = true
@@ -149,6 +169,8 @@ export default {
       setTimeout(() => {
         if (!this.isLoad) {
           this.isLoad = true
+          this.newslist[this.tabIndex] = []
+          this.lastpageid[this.tabIndex] = []
           this.getPageList()
         }
       }, 1500)
@@ -208,13 +230,11 @@ export default {
           if (res.result.newslist.length) {
             this.newsList[this.tabIndex] = [...this.newsList[this.tabIndex], ...res.result.newslist]
             this.dataList = this.newsList[this.tabIndex]
-          }
-          this.isEmpty = !res.result.newslist.length
-          this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
-          this.lastpageid[this.tabIndex] = res.result.lastid || ''
-          if (this.dataList.length) {
             this.getLocalDataForFollow()
           }
+          this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
+          this.lastpageid[this.tabIndex] = res.result.lastid || ''
+          this.isEmpty = !this.newsList[this.tabIndex].length
           const pvMap = {
             'eventid': 'chejiahao_tag_list_page_pv',
             'pagename': 'chejiahao_tag_list_page',
@@ -228,6 +248,7 @@ export default {
         },
         fail: (status) => {
           this.isLoad = false
+          util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
             this.getPageList()
@@ -244,6 +265,18 @@ export default {
       // 未登录
       if (!Number(this.loginInfo.userId)) {
         try {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
+            // 本地数据有
+            if (follow.result.length) {
+              follow.result.map((v) => {
+                this.dataList.map((j) => {
+                  if (Number(v['userId']) === Number(j['userid'])) {
+                    j['isattention'] = '1'
+                  }
+                })
+              })
+            }
+          })
           // 判断赞
           const likes = this.getLs('tagliked')
           if (likes.length) {
@@ -257,19 +290,6 @@ export default {
               })
             })
           }
-
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
-            // 本地数据有
-            if (follow.result.length) {
-              follow.result.map((v) => {
-                this.dataList.map((j) => {
-                  if (Number(v['userId']) === Number(j['userid'])) {
-                    j['isattention'] = '1'
-                  }
-                })
-              })
-            }
-          })
         } catch (e) {}
       }
     },
@@ -279,6 +299,9 @@ export default {
     loadError (e) {
       e.target.onerror = null
       e.target.src = ''
+    },
+    followToggle (item, value) {
+      item.isattention = value
     },
     createMedia (e, news) {
       let curTarget = e.currentTarget
@@ -313,6 +336,7 @@ export default {
     },
     getMore () {
       if (!this.isLoad) {
+        this.isEmpty = false
         func.deleteMedia(this.media)
         if (this.isloadmore[this.tabIndex]) {
           this.isLoad = true
@@ -320,7 +344,7 @@ export default {
         }
       }
     },
-    scaleQingImg (e, news, index) {
+    scaleQingImg (news, index) {
       const data = {
         index: index,
         newsid: news.newsid,
@@ -329,7 +353,7 @@ export default {
         seriesids: news.seriesids,
         pageType: 3
       }
-      func.scaleQingImg(e, data)
+      func.scaleQingImg(data)
     },
     toAuthorPage (e, news) {
       func.deleteMedia(this.media)
@@ -349,6 +373,9 @@ export default {
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style lang="stylus" scoped>
+.c-att-t
+  right 0
+.c-error-tip
+  color #f00
 </style>

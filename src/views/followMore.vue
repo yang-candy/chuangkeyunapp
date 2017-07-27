@@ -8,7 +8,7 @@
     <div class="c-att-more-list" @scroll="getMore">
       <ul class="c-att-ul">
         <li v-for="(item, index) in dataList" @click.stop="toAuthorPage($event, item)"> 
-          <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo"></follow-toggle>
+          <follow-toggle :objecttypeid="10" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" @followEvent="followToggle(item, $event)"></follow-toggle>
           <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           <div class="c-att-des">
             <h3 class="c-att-title">{{item.username}}</h3> 
@@ -46,6 +46,7 @@ export default {
       tabIndex: 0,
       isLoad: false,
       isEmpty: false,
+      isFirst: false,
       isNet: true,
       followId: '',
       urlUserId: util.getParam('userId'),
@@ -81,6 +82,7 @@ export default {
           }
         },
         fail: (status) => {
+          util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
             this.getNavBar()
@@ -92,6 +94,7 @@ export default {
       util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
         this.isNet = state.result
         if (!Number(this.isNet)) {
+          util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
             this.getNavBar()
@@ -122,16 +125,15 @@ export default {
           }
           res = JSON.parse(res)
           this.isLoad = false
-          this.isEmpty = !res.result.users.length
           this.isloadmore[this.tabIndex] = res.result.loadMore || false
           this.lastpageid[this.tabIndex] = res.result.lastId || ''
-          console.log(this.lastpageid[this.tabIndex], this.isloadmore[this.tabIndex])
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.users.length) {
             this.followList[this.tabIndex] = [...this.followList[this.tabIndex], ...res.result.users]
             this.dataList = this.followList[this.tabIndex]
             this.getLocalDataForFollow()
           }
+          this.isEmpty = !this.followList[this.tabIndex].length
           // 添加pv
           const pvMap = {
             'eventid': 'chejiahao_allbigvlist_page_pv',
@@ -143,7 +145,14 @@ export default {
           }
           util.chejiahaoPv(pvMap)
         },
-        fail: (status) => {}
+        fail: (status) => {
+          this.isLoad = false
+          util.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+            util.callNative('ClientViewManager', 'showLoadingView')
+            // this.getFollowMoreList()
+          })
+        }
       })
     },
     getLocalDataForFollow () {
@@ -168,6 +177,9 @@ export default {
     loadError (e) {
       e.target.onerror = null
       e.target.src = ''
+    },
+    followToggle (item, value) {
+      item.isattention = value
     },
     // tab切换
     tabClick (id, index) {
@@ -195,6 +207,7 @@ export default {
       const $height = $target.clientHeight
       const $scrollTop = $target.scrollTop
       const $docScrollTop = document.body.scrollTop
+      this.isEmpty = false
       if (util.mobileType() === 'iOS') {
         if ($scrollTop === 0) {
           window.scrollTop = $docScrollTop
@@ -203,12 +216,7 @@ export default {
       if ($height + $scrollTop >= $scrollHeight) {
         if (!Number(this.isNet)) {
           if (!this.isLoad) {
-            this.isLoad = true
-            util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
-              top: 'topNavTop'
-            }, () => {
-              this.isLoad = false
-            })
+            util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
           }
         } else {
           if (!this.isLoad) {
@@ -229,6 +237,8 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
+.c-att-info
+  margin-right 5px
 .c-empty
   margin-left 5rem
   z-index 1

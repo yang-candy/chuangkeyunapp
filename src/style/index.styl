@@ -17,6 +17,7 @@ body
   overflow-x  hidden
   -webkit-overflow-scrolling  touch
   color  #333
+  background #fff
 
 textarea, input, label, div
   &:focus
@@ -154,8 +155,7 @@ img[lazy=loading]
     
 .c-att-t
   position absolute
-  right 0
-  // right 0.75rem
+  right 0.75rem
   top .9rem
   width 2.5rem
   height 1.25rem
@@ -305,6 +305,18 @@ img[lazy=loading]
     margin-left 1.5rem
     border-radius 50%
     border 2px solid #eee
+    &:before
+      content ''
+      position absolute
+      top 0
+      left 0
+      right 0
+      bottom 0
+      z-index 97
+      background #1b1b1b
+      opacity 0.3
+      border-radius 50%
+
     &:after
       content ''
       position absolute

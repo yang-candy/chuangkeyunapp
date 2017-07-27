@@ -235,9 +235,7 @@ export function deleteMediaWatch (media) {
   })
 }
 
-export function scaleQingImg (e, news) {
-  e.stopPropagation()
-
+export function scaleQingImg (news) {
   let pics = []
   let picurl = news.pics
   picurl.map(function (item) {
