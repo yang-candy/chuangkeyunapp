@@ -264,15 +264,17 @@ export default {
       if (Number(this.loginInfo.userId)) {
         // 取网络数据
         // 传lastpageid分页
-        if (this.isloadmore) {
-          this.isLoad = true
+        if (!this.isLoad) {
+          if (this.isloadmore) {
+            this.isLoad = true
 
-          let opt = {
-            au: this.loginInfo.userAuth
+            let opt = {
+              au: this.loginInfo.userAuth
+            }
+            this.getFollow(opt)
+          } else {
+            this.isLoad = false
           }
-          this.getFollow(opt)
-        } else {
-          this.isLoad = false
         }
       } else {
         if (this.localData) {
@@ -356,8 +358,7 @@ export default {
     
 .c-att-title-f
   margin-top .35rem
-  margin-bottom .6rem
-  line-height 0.85rem
+  margin-bottom 8px
   & + .c-att-info
     margin-right 1.85rem
 </style>

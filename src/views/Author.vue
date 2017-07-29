@@ -263,7 +263,7 @@ export default {
     hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
-      if (likes.length) {
+      if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {
             if (news.length) {

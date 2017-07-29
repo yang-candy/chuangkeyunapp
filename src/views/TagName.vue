@@ -169,8 +169,8 @@ export default {
       setTimeout(() => {
         if (!this.isLoad) {
           this.isLoad = true
-          this.newslist[this.tabIndex] = []
-          this.lastpageid[this.tabIndex] = []
+          this.newsList[this.tabIndex] = []
+          this.lastpageid[this.tabIndex] = ''
           this.getPageList()
         }
       }, 1500)
@@ -259,7 +259,7 @@ export default {
     hasZaned () {
       // 判断赞
       const likes = this.getLs('tagliked')
-      if (likes.length) {
+      if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {
             if (news.length) {
@@ -387,8 +387,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.c-att-t
-  right 0
 .c-error-tip
   color #f00
 </style>
