@@ -77,7 +77,11 @@ export default {
             this.followBarList = res.result
             this.followId = this.followBarList[this.tabIndex].id
             this.followList.length = this.followBarList.length
-            this.followList.fill([])
+            for (let i of this.followList.keys()) {
+              if (!this.followList[i]) {
+                this.followList[i] = []
+              }
+            }
             this.getFollowMore()
           }
         },
@@ -199,7 +203,6 @@ export default {
           this.dataList = this.followList[this.tabIndex]
         }
       }, 0)
-      // this.getFollowMore(index)
     },
     getMore (e) {
       const $target = e.currentTarget
