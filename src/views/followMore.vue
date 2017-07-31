@@ -269,5 +269,22 @@ export default {
   bottom 0
   overflow-y scroll
   background #fff
-  
+ 
+@media only screen and (min-width: 320px)
+  .c-att-fixed
+    width 4.5rem
+  .c-att-bar li
+    line-height 4.3
+  .c-att-ul img
+    width 2rem
+    height 2rem
+    margin-right .5rem
+  .c-att-ul li  
+    height 2.5rem
+    padding .7rem .75rem .8rem
+  .c-att-ul .c-att-title
+    font-size 14px
+    margin-right .5rem
+  .c-att-ul .c-att-fans, .c-att-ul .c-att-info
+    font-size 10px
 </style>
