@@ -29,7 +29,7 @@ export default{
     }
   },
   mounted () {
-    this.likesLocal = this.getLs('tagliked')
+    this.likesLocal = this.getLs('tagliked') || []
   },
   methods: {
     chijiaohaoZanPv () {

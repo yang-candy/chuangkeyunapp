@@ -180,7 +180,7 @@ export default {
       } else {
         util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
           this.loginInfo = user
-          this.isAuthor = this.urlUserId === this.loginInfo.userId
+          this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
           this.pageType = this.isAuthor ? 4 : 5
           this.getPageInfo()
         })

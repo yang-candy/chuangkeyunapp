@@ -75,7 +75,7 @@ export default {
 
           if (res.result.length) {
             this.followBarList = res.result
-            this.followId = this.followBarList[0].id
+            this.followId = this.followBarList[this.tabIndex].id
             this.followList.length = this.followBarList.length
             this.followList.fill([])
             this.getFollowMore()

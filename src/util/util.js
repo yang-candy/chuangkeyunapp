@@ -5,13 +5,13 @@ export const callNative = ApiBridge.callNative
 export const log = ApiBridge.log
 
 export const api = {
-  newListforvuser: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npnewListforvuser.json',
+  newListforvuser: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/npnewListforvuser.json',
   deleteForUserSelf: 'https://chejiahaoopen.api.autohome.com.cn/OpenInfoService.svc/DeleteForUserSelf',
   zanSet: 'https://reply.autohome.com.cn/api/like/set.json?encode=utf-8',
-  npnewlistfortagid: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npnewlistfortagid.json',
-  getCategoryList: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/getCategoryList.json',
-  getUserPageByCategory: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/getUserPageByCategory.json',
-  npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1.0.0/newspf/npgetvuserlist.json'
+  npnewlistfortagid: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/npnewlistfortagid.json',
+  getCategoryList: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/getCategoryList.json',
+  getUserPageByCategory: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/getUserPageByCategory.json',
+  npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/npgetvuserlist.json'
 }
 
 // export const api = {

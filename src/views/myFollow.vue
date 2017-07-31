@@ -112,7 +112,7 @@ export default {
         util.callNative('ClientViewManager', 'hideLoadingView')
         if (this.localData.length) {
           this.isV = false
-          this.localData.map(function (i, item) {
+          this.localData.map(function (item, i) {
             item.userid = item.userId
             item.userpic = item.imgurl
             item.createtime = item.time
@@ -292,7 +292,7 @@ export default {
     // 本地上拉翻页
     localNextPage () {
       this.localIndex++
-      this.localData.map((i, v) => {
+      this.localData.map((v, i) => {
         if (i < ((this.localIndex + 1) * 19) && (i >= this.localIndex * 19)) {
           this.followList.push(v)
         }
