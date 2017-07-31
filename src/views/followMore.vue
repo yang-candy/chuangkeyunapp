@@ -270,7 +270,7 @@ export default {
   overflow-y scroll
   background #fff
  
-@media only screen and (min-width: 320px)
+@media only screen and (max-width: 320px)
   .c-att-fixed
     width 4.5rem
   .c-att-bar li
