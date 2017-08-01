@@ -124,15 +124,15 @@ export default{
         })
       })
     },
-    // 保存到localStorage
+    // 保存到sessionStorage
     setLs (key, value) {
       if (!key) return
       value = (typeof value === 'string') ? value : JSON.stringify(value)
-      window.localStorage.setItem(key, value)
+      window.sessionStorage.setItem(key, value)
     },
     getLs (key) {
       if (!key) return
-      var value = window.localStorage.getItem(key)
+      var value = window.sessionStorage.getItem(key)
       return JSON.parse(value)
     }
   }
