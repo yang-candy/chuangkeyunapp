@@ -272,7 +272,7 @@ export function scaleQingImg (e, news) {
 }
 
 // 点击作者头像获取UserId跳转作者主页
-export function toAuthorPage (e, userId, loginId) {
+export function toAuthorPage (userId, loginId) {
   let pageType = (loginId === userId) ? 5 : 7
 
   util.callNative('ClientViewManager', 'pushViewController', {
@@ -302,7 +302,7 @@ export function toAuthorPage (e, userId, loginId) {
   util.chejiahaoPv(pvMap)
 }
 
-export function toArticleDetail (e, news) {
+export function toArticleDetail (news) {
   let media = {
     mediaId: news.mediaId,
     mediaType: news.mediaType
