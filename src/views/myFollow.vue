@@ -112,16 +112,15 @@ export default {
         util.callNative('ClientViewManager', 'hideLoadingView')
         if (this.localData.length) {
           this.isV = false
-          this.localData.map(function (item, i) {
+          this.localData.map((item, i) => {
             item.userid = item.userId
             item.userpic = item.imgurl
             item.createtime = item.time
             item.username = item.userName
-            if (i < 20) {
-              this.followList.push(item)
-            }
           })
+          this.followList = this.localData
         } else {
+          this.isLoaded = false
           util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
@@ -277,16 +276,20 @@ export default {
           }
         }
       } else {
-        if (this.localData) {
-          let ids = []
-          this.localData.map(function (v) {
-            ids.push(v.userId)
-          })
-          if (ids.length < 20) {
-            return
-          }
-          this.localNextPage()
-        }
+        // if (this.localData) {
+        //   let ids = []
+        //   this.localData.map(function (v) {
+        //     ids.push(v.userId)
+        //   })
+        //   const opt = {
+        //     vids: ids.toString()
+        //   }
+        //   this.getFollow(opt)
+        //   // if (ids.length < 20) {
+        //   //   return
+        //   // }
+        //   // this.localNextPage()
+        // }
       }
     },
     // 本地上拉翻页

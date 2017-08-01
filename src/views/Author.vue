@@ -280,7 +280,7 @@ export default {
     },
     getLs (key) {
       if (!key) return
-      var value = window.localStorage.getItem(key)
+      var value = window.sessionStorage.getItem(key)
       return JSON.parse(value)
     },
     getLocalDataForFollow () {
