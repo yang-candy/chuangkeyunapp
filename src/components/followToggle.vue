@@ -31,6 +31,7 @@ export default{
         }
       }
       util.chejiahaoPv(pvMap)
+
       // 判断是否联网
       util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
         if (!Number(state.result)) {
