@@ -1,6 +1,6 @@
 <template>
-  <div class="c-wp" v-scroll="getMore">
-    <div class="js-follow-more" slot="list">
+  <div class="c-wp" v-scroll="getMore" v-show="isLoaded">
+    <div class="js-follow-more">
       <a class="c-att-more" v-if="!isV" @click.stop="toFollowMore">
         <span></span> 关注更多
       </a>
@@ -9,7 +9,7 @@
         <li v-for="(item, index) in followList" @click.stop="toAuthorPage($event, item)">
           <span class="c-att-time" v-if="!isV">{{item.createtime}}</span>
 
-          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" v-if="isV"></follow-toggle>
+          <follow-toggle :objecttypeid="9" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" v-if="isV" @followEvent="followToggle(item, $event)"></follow-toggle>
 
           <img class="c-auth-img" imgType="head" v-lazy="item.userpic || defaultData.headImg" alt="" @error="loadError($event)"> 
           
@@ -48,6 +48,7 @@ export default {
         headImg: require('../assets/pic_head.png')
       },
       isLoad: false,
+      isLoaded: false,
       isEmpty: false,
       isNet: true,
       isV: false,
@@ -107,9 +108,11 @@ export default {
       // 未联网
       util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
         this.localData = follow.result
+        this.isLoaded = true
+        util.callNative('ClientViewManager', 'hideLoadingView')
         if (this.localData.length) {
           this.isV = false
-          this.localData.map(function (i, item) {
+          this.localData.map(function (item, i) {
             item.userid = item.userId
             item.userpic = item.imgurl
             item.createtime = item.time
@@ -119,6 +122,7 @@ export default {
             }
           })
         } else {
+          util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
             this.init()
@@ -132,6 +136,7 @@ export default {
         this.localData = follow.result
         // 本地数据有
         if (this.localData.length) {
+          this.isV = false
           let ids = []
           // vm.data.localData = follow.result;
           this.localData.map(function (v) {
@@ -141,7 +146,6 @@ export default {
             vids: ids.toString()
           }
           this.getFollow(opt)
-          this.isV = false
         } else {
           this.getV()
         }
@@ -173,12 +177,11 @@ export default {
         success: (res, xml) => {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
-
+          this.isLoaded = true
           this.isloadmore = res.result.isloadmore || ''
           this.lastpageid = res.result.lastpageid || ''
-          this.isEmpty = !res.result.vuserlist.length
           if (res.result.vuserlist.length) {
-            this.isV = true
+            this.isV = false
             this.isLoad = false
             this.followList = [...this.followList, ...res.result.vuserlist]
           } else {
@@ -190,7 +193,7 @@ export default {
               this.isEmpty = true
             }
           }
-
+          this.isEmpty = !this.followList.length
           // 添加pv
           const pvMap = {
             'eventid': 'chejiahao_myattention_page_pv',
@@ -206,6 +209,7 @@ export default {
           if (this.localData.length) {
             this.isV = false
           } else {
+            util.callNative('ClientViewManager', 'hideLoadingView')
             util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
               util.callNative('ClientViewManager', 'showLoadingView')
               this.init()
@@ -226,6 +230,7 @@ export default {
         },
         dataType: 'json',
         success: (res, xml) => {
+          this.isLoaded = true
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
           this.isLoad = false
@@ -237,6 +242,7 @@ export default {
           }
         },
         fail: (status) => {
+          util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
             this.init()
@@ -246,28 +252,29 @@ export default {
     },
     // 上拉加载下一页
     getMore (e) {
+      this.isEmpty = false
       if (this.isV) {
         return
       }
       if (!Number(this.isNet)) {
-        util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork', {
-          top: 'topNavTop'
-        })
+        util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
         return
       }
       // 已登录
       if (Number(this.loginInfo.userId)) {
         // 取网络数据
         // 传lastpageid分页
-        if (this.isloadmore) {
-          this.isLoad = true
+        if (!this.isLoad) {
+          if (this.isloadmore) {
+            this.isLoad = true
 
-          let opt = {
-            au: this.loginInfo.userAuth
+            let opt = {
+              au: this.loginInfo.userAuth
+            }
+            this.getFollow(opt)
+          } else {
+            this.isLoad = false
           }
-          this.getFollow(opt)
-        } else {
-          this.isLoad = false
         }
       } else {
         if (this.localData) {
@@ -285,11 +292,14 @@ export default {
     // 本地上拉翻页
     localNextPage () {
       this.localIndex++
-      this.localData.map((i, v) => {
+      this.localData.map((v, i) => {
         if (i < ((this.localIndex + 1) * 19) && (i >= this.localIndex * 19)) {
           this.followList.push(v)
         }
       })
+    },
+    followToggle (item, value) {
+      item.isattention = value
     },
     loadError (e) {
       e.target.onerror = null
@@ -348,8 +358,7 @@ export default {
     
 .c-att-title-f
   margin-top .35rem
-  margin-bottom .6rem
-  line-height 0.85rem
+  margin-bottom 8px
   & + .c-att-info
     margin-right 1.85rem
 </style>

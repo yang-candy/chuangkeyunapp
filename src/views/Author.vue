@@ -17,8 +17,8 @@
             <span class="c-auth-work">{{userInfo.publishcount}}作品</span>
           </p>
           <p v-if="!isAuthor">
-            <a href="javascript:;" class="c-auth-follow" v-show="!isAttention" @click="followToggle($event, 0)"><span>＋</span> 关注</a>
-            <a href="javascript:;" class="c-auth-follow on" v-show="isAttention" @click="followToggle($event, 1)">已关注</a>
+            <a href="javascript:;" class="c-auth-follow" v-show="!isAttention" @click.stop="followToggle($event, 0)"><span>＋</span> 关注</a>
+            <a href="javascript:;" class="c-auth-follow on" v-show="isAttention" @click.stop="followToggle($event, 1)">已关注</a>
           </p>
           
         </div>
@@ -27,49 +27,67 @@
     </div>
     <div class="c-tab-list">
       <ul class="c-tab-title" ref="tabBar">
-        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click="tabClick(index)">{{item}}</li>
+        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click.stop="tabClick($event, index)">{{item}}</li>
       </ul>
 
       <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail(item, index)">
+          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
-              <div class="c-media-info" @click.stop="toAuthorPage(item)">
+              <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
                 <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg" alt="">
                 <p class="c-auth-title">{{userInfo.name}}</p>
               </div>
               
               <a class="c-att-delete" v-show="isAuthor && item['iscandelete'] === 1" @click.stop="deleteNewModal(item, index, $event)"></a>
             </div>
-            <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}" v-if="(item.mediatype !== 4 && item.mediatype !== 1) || ( item.mediatype === 1 && item.recommendShowBigImg)">
-              {{item.mediatype === 2 ? item.description : item.title}}
-            </div>
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
               <p>{{item.title}}</p>
               <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
             </div>
-            <div class="c-media-content" v-if="(item.mediatype === 1 && item.recommendShowBigImg) || (item.mediatype === 2 && item.thumbnailpics.length < 3)">
-              <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+            <div class="c-media-content" v-else-if="item.mediatype === 1 && item.recommendShowBigImg">
+              <div class="c-media-desc">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+              </div>
             </div>
 
-            <div class="c-media-content c-media-qing-more" v-if="item.mediatype === 2 && item.thumbnailpics.length > 3">
-              <img imgType="article" alt=""
-                v-for="(img, imgIndex) in item.thumbnailpics"
-                v-if="imgIndex < 3"
-                v-lazy="img" 
-                @click.stop="scaleQingImg($event, item, imgIndex)"
-              >
+            <div class="c-media-content" v-else-if="item.mediatype === 2 && item.thumbnailpics.length < 3">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img" v-show="item.thumbnailpics.length">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
+              </div>
             </div>
-
-            <div v-if="item.mediatype === 3" class="c-media-content c-media-video" @click.stop="createMedia($event, item)">
-              <img imgType="article" v-lazy="item.thumbnailpics[0]">
-              <span class="media-video-btn"></span>
-              <span class="c-media-time">{{item.playtime}}</span>
+            <div class="c-media-content" v-else-if="item.mediatype === 2 && item.thumbnailpics.length >= 3">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img c-media-qing-more" v-show="item.thumbnailpics.length">
+                <img imgType="article" class="c-auth-info-img c-auth-audio-img" alt=""
+                  v-for="(img, imgIndex) in item.thumbnailpics"
+                  v-if="imgIndex < 3"
+                  v-lazy="img" 
+                  @click.stop="scaleQingImg(item, imgIndex)"
+                >
+              </div>
             </div>
-
-            <div v-if="item.mediatype === 4" class="c-media-audio">
+            <div v-else-if="item.mediatype === 3" class="c-media-content c-media-video">
+              <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
+                {{item.mediatype === 2 ? item.description : item.title}}
+              </div>
+              <div class="c-media-img c-media-video" @click.stop="createMedia($event, item)">
+                <img imgType="article" v-lazy="item.thumbnailpics[0]">
+                <span class="media-video-btn"></span>
+                <span class="c-media-time">{{item.playtime}}</span>
+              </div>
+            </div>
+            <div v-else-if="item.mediatype === 4" class="c-media-audio">
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
-                <img imgType="audio" v-lazy="item.thumbnailpics[0]" alt="">
+                <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
               <span>
                 {{item.title}}
@@ -83,7 +101,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -154,6 +172,7 @@ export default {
     util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
       // 未联网
       if (!Number(data.result)) {
+        util.callNative('ClientViewManager', 'hideLoadingView')
         util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
           util.callNative('ClientViewManager', 'showLoadingView')
           this.getPageInfo()
@@ -161,7 +180,7 @@ export default {
       } else {
         util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
           this.loginInfo = user
-          this.isAuthor = this.urlUserId === this.loginInfo.userId
+          this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
           this.pageType = this.isAuthor ? 4 : 5
           this.getPageInfo()
         })
@@ -201,6 +220,7 @@ export default {
           if (res.result.newslist.length) {
             // this.$set(this.newsList, this.tabIndex, this.newsList[this.tabIndex].concat(res.result.newslist))
             this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
+            this.hasZaned()
             this.dataList = this.newsList[this.tabIndex]
           }
           if (res.result.userinfo) {
@@ -231,8 +251,37 @@ export default {
           util.chejiahaoPv(pvMap)
         },
         fail: (status) => {
+          this.isLoad = false
+          util.callNative('ClientViewManager', 'hideLoadingView')
+          util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+            util.callNative('ClientViewManager', 'showLoadingView')
+            this.getPageInfo()
+          })
         }
       })
+    },
+    hasZaned (value) {
+      // 判断赞
+      const likes = this.getLs('tagliked')
+      if (likes && likes.length) {
+        likes.map((j) => {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (j['newsid'] === v['newsid']) {
+                  v['hasZan'] = true
+                  v['praisenum'] = j['praisenum']
+                }
+              })
+            }
+          })
+        })
+      }
+    },
+    getLs (key) {
+      if (!key) return
+      var value = window.sessionStorage.getItem(key)
+      return JSON.parse(value)
     },
     getLocalDataForFollow () {
       // 未登录
@@ -256,7 +305,7 @@ export default {
       util.callNative('ClientViewManager', 'showDrawerView', {
         names: ['删除']
       }, (result) => {
-        if (result.result === 0) {
+        if (Number(result.result) === 0) {
           this.deleteNew(item, index, e)
         }
       })
@@ -437,7 +486,7 @@ export default {
       func.followToggle(e, type, info, icon1, this)
     },
     // tab切换
-    tabClick (index) {
+    tabClick (e, index) {
       this.isEmpty = false
       this.isLoad = false
       if (this.tabIndex === index) {
@@ -496,6 +545,7 @@ export default {
     },
     getMore () {
       if (!this.isLoad) {
+        this.isEmpty = false
         func.deleteMedia(this.media)
         if (this.isloadmore[this.tabIndex]) {
           this.isLoad = true
@@ -503,7 +553,7 @@ export default {
         }
       }
     },
-    scaleQingImg (e, news, index) {
+    scaleQingImg (news, index) {
       const data = {
         index: index,
         newsid: news.newsid,
@@ -512,12 +562,12 @@ export default {
         seriesids: news.seriesids,
         pageType: 5
       }
-      func.scaleQingImg(e, data)
+      func.scaleQingImg(data)
     },
-    toAuthorPage (news) {
+    toAuthorPage (e, news) {
       return
     },
-    toArticleDetail (item, index) {
+    toArticleDetail (e, item, index) {
       const data = {
         loginId: this.loginInfo.userId,
         newsId: item.newsid,
@@ -526,7 +576,7 @@ export default {
         position: index + 1
       }
 
-      func.toArticleDetail(data)
+      func.toArticleDetail(e, data)
     }
   }
 }
@@ -564,6 +614,7 @@ export default {
       right 0
       img
         width 100%
+        height 100%
         border 1px solid rgba(238,238,238,.3)
         border-radius 50%
         // background url(../assets/pic_head.png) no-repeat
@@ -618,5 +669,6 @@ export default {
 
 .c-tab-list 
   border-top .5rem solid #F8F8F8
- 
+.c-error-tip
+  color #f00
 </style>

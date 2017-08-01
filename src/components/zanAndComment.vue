@@ -1,7 +1,7 @@
 <template>
   <p class="c-tab-ue">
-    <span class="c-zan" @click.stop.once="likeZan">
-      <span class="zan-icon" :class="{on: hasZan}"></span>
+    <span class="c-zan" @click.stop="likeZan">
+      <span class="zan-icon" :class="{'on-no-inmation': news.hasZan, 'on': isAddZan}"></span>
       <span class="c-add1" v-show="isAddZan">+1</span>
       <span class="c-num">{{news['praisenum']}}</span>
     </span>
@@ -27,6 +27,9 @@ export default{
     news () {
       return this.newsData
     }
+  },
+  mounted () {
+    this.likesLocal = this.getLs('tagliked') || []
   },
   methods: {
     chijiaohaoZanPv () {
@@ -67,9 +70,12 @@ export default{
       })
     },
     likeZan () {
+      if (this.news.hasZan) {
+        return
+      }
       if (!this.user.userId) {
         util.callNative('ClientViewManager', 'login', {}, (res) => {
-          if (res.result === 1) {
+          if (Number(res.result) === 1) {
             this.zanHandler(this)
           }
         })
@@ -80,17 +86,20 @@ export default{
     zanHandler () {
       this.hasZan = true
       this.isAddZan = true
+      this.news.hasZan = true
       this.news.praisenum++
-
       this.chijiaohaoZanPv()
       setTimeout(() => {
         this.isAddZan = false
       }, 1000)
 
       // 记录点赞
-      this.likesLocal.push(this.news.newsid)
+      this.likesLocal.push({
+        newsid: this.news.newsid,
+        praisenum: this.news.praisenum
+      })
       this.setLs('tagliked', this.likesLocal)
-
+      this.$emit('hasZaned')
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
@@ -111,9 +120,7 @@ export default{
           success: (res, xml) => {
             this.hasZan = true
           },
-          fail: (status) => {
-            this.hasZan = false
-          }
+          fail: (status) => {}
         })
       })
     },
@@ -122,6 +129,11 @@ export default{
       if (!key) return
       value = (typeof value === 'string') ? value : JSON.stringify(value)
       window.localStorage.setItem(key, value)
+    },
+    getLs (key) {
+      if (!key) return
+      var value = window.localStorage.getItem(key)
+      return JSON.parse(value)
     }
   }
 }
@@ -147,7 +159,7 @@ export default{
       background url(../assets/zan.png) center no-repeat
       background-size 100% auto
     .on
-      background url(../assets/tag-zan.png) center no-repeat
+      background url(../assets/zan.png) center no-repeat
       background-size 100% auto
       transform scale(1)
       animation zans 800ms linear 1 forwards
