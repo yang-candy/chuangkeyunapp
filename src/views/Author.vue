@@ -169,22 +169,11 @@ export default {
     }
   },
   mounted () {
-    util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
-      // 未联网
-      if (!Number(data.result)) {
-        util.callNative('ClientViewManager', 'hideLoadingView')
-        util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-          util.callNative('ClientViewManager', 'showLoadingView')
-          this.getPageInfo()
-        })
-      } else {
-        util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
-          this.loginInfo = user
-          this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
-          this.pageType = this.isAuthor ? 4 : 5
-          this.getPageInfo()
-        })
-      }
+    util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+      this.loginInfo = user
+      this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
+      this.pageType = this.isAuthor ? 4 : 5
+      this.getPageInfo()
     })
     util.setViewBounces()
     this.deleteMediaWatch()
@@ -218,7 +207,6 @@ export default {
           this.isLoaded = true
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (res.result.newslist.length) {
-            // this.$set(this.newsList, this.tabIndex, this.newsList[this.tabIndex].concat(res.result.newslist))
             this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
             this.hasZaned()
             this.dataList = this.newsList[this.tabIndex]
@@ -341,6 +329,11 @@ export default {
             }
             this.dataList.splice(index, 1)
             this.isEmpty = !this.dataList.length
+            setTimeout(() => {
+              if (this.isEmpty) {
+                this.setEmpty()
+              }
+            }, 0)
           }
         },
         fail: (status) => {}

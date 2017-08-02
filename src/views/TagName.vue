@@ -267,7 +267,6 @@ export default {
             if (news.length) {
               news.map((v) => {
                 if (j['newsid'] === v['newsid']) {
-                  debugger
                   if (value === 'zaned') {
                     v['hasZan'] = true
                   }
