@@ -223,7 +223,7 @@ export default {
           }
         } else {
           if (!this.isLoad) {
-            if (this.isloadmore) {
+            if (this.isloadmore[this.tabIndex]) {
               this.isLoad = true
               this.getFollowMoreList()
             } else {
@@ -272,7 +272,8 @@ export default {
   bottom 0
   overflow-y scroll
   background #fff
- 
+.c-att-ul .c-att-title
+  width 90px
 @media only screen and (max-width: 320px)
   .c-att-fixed
     width 4.5rem
@@ -287,7 +288,7 @@ export default {
     padding .7rem .75rem .8rem
   .c-att-ul .c-att-title
     font-size 14px
-    margin-right .5rem
+    margin-right 3rem
   .c-att-ul .c-att-fans, .c-att-ul .c-att-info
     font-size 10px
 </style>

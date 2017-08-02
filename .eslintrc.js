@@ -17,6 +17,7 @@ module.exports = {
   ],
   'globals': {
     'ApiBridge': true,
+    'kerkee': true,
     'Vue': true
   },
 

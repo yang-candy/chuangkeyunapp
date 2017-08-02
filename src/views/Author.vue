@@ -25,7 +25,7 @@
         
       </div>
     </div>
-    <div class="c-tab-list">
+    <div class="c-tab-list" ref="tabList">
       <ul class="c-tab-title" ref="tabBar">
         <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click.stop="tabClick($event, index)">{{item}}</li>
       </ul>
@@ -101,7 +101,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -111,7 +111,7 @@
         <p>加载中...</p>
       </div>
     </div>
-    <div class="c-empty" v-show="isEmpty"> 
+    <div class="c-empty" v-show="isEmpty" ref="emptyEle"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
     </div>
   </div>
@@ -238,7 +238,11 @@ export default {
           this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
           this.lastpageid[this.tabIndex] = res.result.lastid || ''
           this.hasRequest = true
-
+          setTimeout(() => {
+            if (this.isEmpty) {
+              this.setEmpty()
+            }
+          }, 0)
           const pvMap = {
             'eventid': this.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
             'pagename': this.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
@@ -508,6 +512,13 @@ export default {
     resize (e) {
       e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
     },
+    setEmpty () {
+      let winHeight = window.innerHeight
+      let offsetHeight = this.$refs.tabList.clientHeight
+      let offsetTop = this.$refs.tabList.offsetTop
+      let emptyHeight = winHeight - offsetHeight - offsetTop
+      this.$refs.emptyEle.style.height = emptyHeight + 'px'
+    },
     loadError (e) {
       e.target.onerror = null
       e.target.src = ''
@@ -671,4 +682,6 @@ export default {
   border-top .5rem solid #F8F8F8
 .c-error-tip
   color #f00
+.c-author
+  display block
 </style>

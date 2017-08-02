@@ -176,16 +176,17 @@ export default {
         success: (res, xml) => {
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
-          this.isLoaded = true
           this.isloadmore = res.result.isloadmore || ''
           this.lastpageid = res.result.lastpageid || ''
           if (res.result.vuserlist.length) {
             this.isV = false
             this.isLoad = false
+            this.isLoaded = true
             this.followList = [...this.followList, ...res.result.vuserlist]
           } else {
             // 已登录本地数据没有
             if (opt.au) {
+              this.isLoaded = false
               this.isLoad = true
               this.getV(opt.au)
             } else {
@@ -326,6 +327,9 @@ export default {
 }
 </script>
 <style lang="stylus" scoped>
+.c-att-ul
+  li:first-of-type
+    border-top 1px solid #eee
 .c-att-tit
   box-sizing border-box
   background #F8F8F8

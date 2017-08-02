@@ -3,7 +3,7 @@ require('./kerkee.js')
 
 export const callNative = ApiBridge.callNative
 export const log = ApiBridge.log
-
+export const registerScrollListener = kerkee.registerScrollListener
 export const api = {
   newListforvuser: 'http://chejiahao.app.autohome.com.cn/chejiahao_v_1_0_1/newspf/npnewListforvuser.json',
   deleteForUserSelf: 'https://chejiahaoopen.api.autohome.com.cn/OpenInfoService.svc/DeleteForUserSelf',

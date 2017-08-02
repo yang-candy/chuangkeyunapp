@@ -13,9 +13,10 @@
 
 <script>
 import * as util from '../util/util.js'
+import * as func from '../util/index.js'
 
 export default{
-  props: ['newsData', 'user'],
+  props: ['newsData', 'user', 'media'],
   data () {
     return {
       hasZan: false,
@@ -56,6 +57,7 @@ export default{
         }
       }
       util.chejiahaoPv(pvMap)
+      func.deleteMedia(this.media)
       util.callNative('ClientViewManager', 'pushViewController', {
         pagetype: 2,
         animationtype: 2,
@@ -74,6 +76,7 @@ export default{
         return
       }
       if (!this.user.userId) {
+        func.deleteMedia(this.media)
         util.callNative('ClientViewManager', 'login', {}, (res) => {
           if (Number(res.result) === 1) {
             this.zanHandler(this)

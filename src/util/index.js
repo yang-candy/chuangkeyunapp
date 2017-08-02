@@ -226,7 +226,10 @@ export function deleteMediaWatch (media) {
       if ((media.mediaHeight + media.mediaY) < scrollTop || (media.mediaY - offsetHeight > scrollTop)) {
         media.mediaStatus = false
         if (media.mediaType === 3) {
-          if (window.orientation !== 0) {
+          if (window.innerHeight <= window.innerWidth) {
+            return
+          }
+          if (window.orientation !== 0 && window.orientation !== 180) {
             return
           }
           util.callNative('ClientVideoManager', 'deleteById', {
