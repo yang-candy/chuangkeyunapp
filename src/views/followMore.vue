@@ -287,6 +287,7 @@ export default {
     height 2.5rem
     padding .7rem .75rem .8rem
   .c-att-ul .c-att-title
+    width 75px
     font-size 14px
     margin-right 3rem
   .c-att-ul .c-att-fans, .c-att-ul .c-att-info

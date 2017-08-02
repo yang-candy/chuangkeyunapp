@@ -2,8 +2,8 @@
   <p class="c-tab-ue">
     <span class="c-zan" @click.stop="likeZan">
       <span class="zan-icon" :class="{'on-no-inmation': news.hasZan, 'on': isAddZan}"></span>
-      <span class="c-add1" v-show="isAddZan">+1</span>
-      <span class="c-num">{{news['praisenum']}}</span>
+      <span class="c-num">{{news['praisenum']}}<span class="c-add1" v-show="isAddZan">+1</span></span>
+
     </span>
     <span class="c-comment" @click.stop="tagCommon">
       <span class="c-num">{{news['replycount']}}</span>
@@ -102,7 +102,7 @@ export default{
         praisenum: this.news.praisenum
       })
       this.setLs('tagliked', this.likesLocal)
-      this.$emit('hasZaned')
+      this.$emit('hasZaned', 'zaned')
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
@@ -127,15 +127,15 @@ export default{
         })
       })
     },
-    // 保存到sessionStorage
+    // 保存到localStorage
     setLs (key, value) {
       if (!key) return
       value = (typeof value === 'string') ? value : JSON.stringify(value)
-      window.sessionStorage.setItem(key, value)
+      window.localStorage.setItem(key, value)
     },
     getLs (key) {
       if (!key) return
-      var value = window.sessionStorage.getItem(key)
+      var value = window.localStorage.getItem(key)
       return JSON.parse(value)
     }
   }
@@ -171,8 +171,7 @@ export default{
       background-size 100% auto
     .c-add1
       position absolute
-      top -9px
-      right -15px
+      right -13px
       z-index 99
       color #4C92FB
       animation add 800ms linear 1 forwards

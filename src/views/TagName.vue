@@ -148,16 +148,18 @@ export default {
         util.callNative('ClientViewManager', 'hideLoadingView')
         util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
           util.callNative('ClientViewManager', 'showLoadingView')
-          this.isFirst = true
-          this.setTabBar()
+          // this.isFirst = true
+          // this.setTabBar()
         })
       } else {
         util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
           this.loginInfo = user
-          this.isFirst = true
-          this.setTabBar()
+          // this.isFirst = true
+          // this.setTabBar()
         })
       }
+      this.isFirst = true
+      this.setTabBar()
     })
     this.deleteMediaWatch()
   },
@@ -256,7 +258,7 @@ export default {
         }
       })
     },
-    hasZaned () {
+    hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
       if (likes && likes.length) {
@@ -265,7 +267,10 @@ export default {
             if (news.length) {
               news.map((v) => {
                 if (j['newsid'] === v['newsid']) {
-                  v['hasZan'] = true
+                  debugger
+                  if (value === 'zaned') {
+                    v['hasZan'] = true
+                  }
                   v['praisenum'] = j['praisenum']
                 }
               })
@@ -276,7 +281,7 @@ export default {
     },
     getLs (key) {
       if (!key) return
-      var value = window.sessionStorage.getItem(key)
+      var value = window.localStorage.getItem(key)
       return JSON.parse(value)
     },
     getLocalDataForFollow () {

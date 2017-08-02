@@ -273,7 +273,9 @@ export default {
             if (news.length) {
               news.map((v) => {
                 if (j['newsid'] === v['newsid']) {
-                  v['hasZan'] = true
+                  if (value === 'zaned') {
+                    v['hasZan'] = true
+                  }
                   v['praisenum'] = j['praisenum']
                 }
               })
@@ -284,7 +286,7 @@ export default {
     },
     getLs (key) {
       if (!key) return
-      var value = window.sessionStorage.getItem(key)
+      var value = window.localStorage.getItem(key)
       return JSON.parse(value)
     },
     getLocalDataForFollow () {

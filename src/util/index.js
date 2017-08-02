@@ -166,7 +166,7 @@ export function createMedia (e, news, media, pageType) {
             mediaid: media.mediaId,
             x: media.mediaX,
             y: media.mediaY,
-            title: news.mediatitle,
+            title: news.title,
             status: news.status,
             playtime: news.playtime,
             thumbnailpics: news.thumbnailpics,
