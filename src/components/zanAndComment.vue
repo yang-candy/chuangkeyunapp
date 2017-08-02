@@ -97,10 +97,7 @@ export default{
       }, 1000)
 
       // 记录点赞
-      this.likesLocal.push({
-        newsid: this.news.newsid,
-        praisenum: this.news.praisenum
-      })
+      this.likesLocal.push(this.news.newsid)
       this.setLs('tagliked', this.likesLocal)
       this.$emit('hasZaned', 'zaned')
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {

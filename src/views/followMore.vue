@@ -277,8 +277,12 @@ export default {
 @media only screen and (max-width: 320px)
   .c-att-fixed
     width 4.5rem
+  .c-att-more-list
+    left 4.5rem
   .c-att-bar li
-    line-height 4.3
+    height 60px
+    line-height 60px
+    text-indent .6rem
   .c-att-ul img
     width 2rem
     height 2rem

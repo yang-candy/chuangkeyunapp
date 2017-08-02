@@ -73,6 +73,7 @@
                   v-lazy="img" 
                   @click.stop="scaleQingImg(item, imgIndex)"
                 >
+                <span class="c-qing-num" v-show="item.thumbnailpics.length > 3">{{item.thumbnailpics.length}}</span>
               </div>
             </div>
             <div v-else-if="item.mediatype === 3" class="c-media-content c-media-video">
@@ -260,11 +261,8 @@ export default {
           this.newsList.map((news, index) => {
             if (news.length) {
               news.map((v) => {
-                if (j['newsid'] === v['newsid']) {
-                  if (value === 'zaned') {
-                    v['hasZan'] = true
-                  }
-                  v['praisenum'] = j['praisenum']
+                if (j === v['newsid']) {
+                  v['hasZan'] = true
                 }
               })
             }
@@ -444,11 +442,9 @@ export default {
       util.callNative('ClientNavigationManager', 'setNavBackIcon', {
         navigationbacktype: info.navigationbacktype || 5
       })
-
-      util.callNative('ClientNavigationManager', 'setNavCircleIcon', {
-        imgurl: info.imgurl || ''
-      })
-
+      // util.callNative('ClientNavigationManager', 'setNavCircleIcon', {
+      //   imgurl: info.imgurl || ''
+      // })
       util.callNative('ClientNavigationManager', 'setNavTitle', {
         title: info.title || ''
       })
