@@ -78,6 +78,7 @@ export default {
   },
   mounted () {
     this.init()
+    this.registerNotice()
   },
   methods: {
     init () {
@@ -98,6 +99,20 @@ export default {
               this.getFollow(opt)
             } else {
               this.getLocalDataNet()
+            }
+          })
+        }
+      })
+    },
+    // 注册全局通知（点赞和关注）
+    registerNotice () {
+      util.callNative('ClientNoticeManager', 'registerNotice', {
+        keys: ['kNotification_yc_followNotification', 'kNotification_yc_praiseNotification']
+      }, (result) => {
+        if (this.followList.length && result.key === 'kNotification_yc_followNotification') {
+          this.followList.map((news, index) => {
+            if (result.args.state === 1 && Number(result.args.userid) === Number(news['userid'])) {
+              news['isattention'] = result.args.operation
             }
           })
         }

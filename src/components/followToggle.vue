@@ -19,6 +19,18 @@ export default{
     }
   },
   methods: {
+    // 发送关注全局通知
+    postFollowNotice () {
+      const args = {
+        'key': 'kNotification_yc_followNotification',
+        'args': {
+          'operation': this.isAttention,
+          'userid': this.newsData.userid,
+          'state': 1
+        }
+      }
+      util.callNative('ClientNoticeManager', 'postNotice', args)
+    },
     followToggle (e) {
       const pvMap = {
         'eventid': 'chejiahao_cancelorattention_click',
@@ -41,6 +53,7 @@ export default{
           })
           return
         }
+        this.postFollowNotice()
         if (Number(this.loginInfo.userId)) {
           let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
           if (this.isAttention) {

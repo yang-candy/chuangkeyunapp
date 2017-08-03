@@ -1,7 +1,7 @@
 <template>
   <!-- <keep-alive></keep-alive>>   -->
   <div class="c-wp c-author" v-show="isLoaded">
-    <div class="c-auth-top">
+    <!-- <div class="c-auth-top">
       <div class="c-auth-bg">
         <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
       </div>
@@ -24,11 +24,11 @@
         </div>
         
       </div>
-    </div>
+    </div> -->
     <div class="c-tab-list" ref="tabList">
-      <ul class="c-tab-title" ref="tabBar">
+      <!-- <ul class="c-tab-title" ref="tabBar">
         <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click.stop="tabClick($event, index)">{{item}}</li>
-      </ul>
+      </ul> -->
 
       <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
@@ -136,6 +136,7 @@ export default {
         headImg: require('../assets/pic_head.png')
       },
       tabIndex: 0,
+      isFirst: false,
       hasRequest: false,
       isLoaded: false,
       isLoad: false,
@@ -174,13 +175,80 @@ export default {
       this.loginInfo = user
       this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
       this.pageType = this.isAuthor ? 4 : 5
-      this.getPageInfo()
+      this.isFirst = true
+      this.setTabBar()
     })
-    util.setViewBounces()
+    // util.setViewBounces()
     this.deleteMediaWatch()
+    this.registerNotice()
   },
   methods: {
-    getPageInfo (index) {
+    // tab切换
+    tabClick (e, index) {
+      this.isEmpty = false
+      this.isLoad = false
+      if (this.tabIndex === index) {
+        return
+      }
+      this.dataList = []
+      // this.newsList = []
+      // this.lastpageid = ''
+      this.tabIndex = index
+      func.deleteMedia(this.media)
+      setTimeout(() => {
+        if (!this.newsList[this.tabIndex].length) {
+          this.getPageList(index)
+        } else {
+          this.dataList = this.newsList[this.tabIndex]
+        }
+      }, 0)
+    },
+    // tab切换调用native返回相应的index
+    setTabBar () {
+      util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
+        if (this.tabIndex === Number(index.index) && !this.isFirst) {
+          return
+        }
+        this.isLoad = false
+        this.isEmpty = false
+        this.isFirst = false
+        this.dataList = []
+        // this.newsList = []
+        // this.lastpageid = ''
+        // document.body.scrollTop = 0
+        this.tabIndex = Number(index.index)
+        func.deleteMedia(this.media)
+        // this.getPageList(Number(index.index))
+
+        setTimeout(() => {
+          if (!this.newsList[this.tabIndex].length) {
+            // this.getPageList(index)
+            this.getPageList(Number(index.index))
+          } else {
+            this.dataList = this.newsList[this.tabIndex]
+          }
+        }, 0)
+      })
+    },
+    // 注册全局通知（点赞）
+    registerNotice () {
+      util.callNative('ClientNoticeManager', 'registerNotice', {
+        keys: ['kNotification_yc_followNotification', 'kNotification_yc_praiseNotification']
+      }, (result) => {
+        if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (Number(result.args.newsid) === Number(v['newsid'])) {
+                  v['hasZan'] = true
+                }
+              })
+            }
+          })
+        }
+      })
+    },
+    getPageList (index) {
       let pid = this.lastpageid[this.tabIndex] || ''
       let dt = (this.urlUserId !== this.loginInfo.userId) ? 2 : 3
       let vuserid = this.urlUserId || ''
@@ -207,31 +275,34 @@ export default {
           this.isLoad = false
           this.isLoaded = true
           util.callNative('ClientViewManager', 'hideLoadingView')
+          if (!res.result) {
+            return
+          }
           if (res.result.newslist.length) {
             this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
             this.hasZaned()
             this.dataList = this.newsList[this.tabIndex]
           }
           if (res.result.userinfo) {
-            res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
+            // res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
             if (!this.hasRequest) {
               this.userInfo = res.result.userinfo
               this.shareInfo = res.result.shareinfo
-              this.isAttention = res.result.userinfo.isattention
-              this.getLocalDataForFollow()
-              this.setImgWithBlur()
-              this.navBarWatch()
+              // this.isAttention = res.result.userinfo.isattention
+              // this.getLocalDataForFollow()
+              // this.setImgWithBlur()
+              // this.navBarWatch()
             }
           }
           this.isEmpty = !this.newsList[this.tabIndex].length
           this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
           this.lastpageid[this.tabIndex] = res.result.lastid || ''
           this.hasRequest = true
-          setTimeout(() => {
-            if (this.isEmpty) {
-              this.setEmpty()
-            }
-          }, 0)
+          // setTimeout(() => {
+          //   if (this.isEmpty) {
+          //     this.setEmpty()
+          //   }
+          // }, 0)
           const pvMap = {
             'eventid': this.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
             'pagename': this.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
@@ -248,7 +319,7 @@ export default {
           util.callNative('ClientViewManager', 'hideLoadingView')
           util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
             util.callNative('ClientViewManager', 'showLoadingView')
-            this.getPageInfo()
+            this.getPageList()
           })
         }
       })
@@ -274,23 +345,6 @@ export default {
       if (!key) return
       var value = window.localStorage.getItem(key)
       return JSON.parse(value)
-    },
-    getLocalDataForFollow () {
-      // 未登录
-      if (!Number(this.loginInfo.userId)) {
-        try {
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
-            // 本地数据有
-            if (follow.result.length) {
-              follow.result.map((v) => {
-                if (v['userId'] === Number(this.urlUserId)) {
-                  this.isAttention = 1
-                }
-              })
-            }
-          })
-        } catch (e) {}
-      }
     },
     // 点击删除某条信息
     deleteNewModal (item, index, e) {
@@ -327,15 +381,112 @@ export default {
             }
             this.dataList.splice(index, 1)
             this.isEmpty = !this.dataList.length
-            setTimeout(() => {
-              if (this.isEmpty) {
-                this.setEmpty()
-              }
-            }, 0)
+            // setTimeout(() => {
+            //   if (this.isEmpty) {
+            //     this.setEmpty()
+            //   }
+            // }, 0)
           }
         },
         fail: (status) => {}
       })
+    },
+    resize (e) {
+      e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
+    },
+    setEmpty () {
+      let winHeight = window.innerHeight
+      let offsetHeight = this.$refs.tabList.clientHeight
+      let offsetTop = this.$refs.tabList.offsetTop
+      let emptyHeight = winHeight - offsetHeight - offsetTop
+      this.$refs.emptyEle.style.height = emptyHeight + 'px'
+    },
+    loadError (e) {
+      e.target.onerror = null
+      e.target.src = ''
+    },
+    createMedia (e, news) {
+      const curTarget = e.currentTarget
+      this.media = {
+        mediaWidth: curTarget.offsetWidth,
+        mediaHeight: curTarget.offsetHeight,
+        mediaX: curTarget.firstChild.x - curTarget.clientLeft,
+        mediaY: curTarget.firstChild.y - curTarget.clientTop,
+        mediaId: news.mediaid,
+        mediaType: news.mediatype,
+        mediaTitle: news.title,
+        mediaStatus: true
+      }
+      func.createMedia(e, news, this.media, this.pageType)
+    },
+    deleteMediaWatch () {
+      window.addEventListener('scroll', () => {
+        const offsetHeight = window.innerHeight
+        const scrollTop = document.body.scrollTop
+        const titleHeight = this.$refs.tabBar.clientHeight
+        if (this.media.mediaStatus) {
+          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
+            this.media.mediaStatus = false
+            if (this.media.mediaType === 3) {
+              util.callNative('ClientVideoManager', 'deleteById', {
+                mediaid: this.media.mediaId
+              })
+            }
+          }
+        }
+      })
+    },
+    getMore () {
+      if (!this.isLoad) {
+        this.isEmpty = false
+        func.deleteMedia(this.media)
+        if (this.isloadmore[this.tabIndex]) {
+          this.isLoad = true
+          this.getPageList()
+        }
+      }
+    },
+    scaleQingImg (news, index) {
+      const data = {
+        index: index,
+        newsid: news.newsid,
+        pics: news.pics,
+        sharecontent: news.description,
+        seriesids: news.seriesids,
+        pageType: 5
+      }
+      func.scaleQingImg(data)
+    },
+    toAuthorPage (e, news) {
+      return
+    },
+    toArticleDetail (e, item, index) {
+      const data = {
+        loginId: this.loginInfo.userId,
+        newsId: item.newsid,
+        mediaId: item.mediaid,
+        mediaType: item.mediatype,
+        position: index + 1
+      }
+
+      func.toArticleDetail(e, data)
+    },
+    getLocalDataForFollow () {
+      // 未登录
+      if (!Number(this.loginInfo.userId)) {
+        try {
+          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
+            // 本地数据有
+            if (follow.result.length) {
+              follow.result.map((v) => {
+                if (v['userId'] === Number(this.urlUserId)) {
+                  this.isAttention = 1
+                }
+              })
+            }
+          })
+        } catch (e) {}
+      }
     },
     // 高斯模糊设置
     setImgWithBlur () {
@@ -479,106 +630,6 @@ export default {
         description: this.userInfo.description || ''
       }
       func.followToggle(e, type, info, icon1, this)
-    },
-    // tab切换
-    tabClick (e, index) {
-      this.isEmpty = false
-      this.isLoad = false
-      if (this.tabIndex === index) {
-        return
-      }
-      this.dataList = []
-      // this.newsList = []
-      // this.lastpageid = ''
-      this.tabIndex = index
-      func.deleteMedia(this.media)
-      setTimeout(() => {
-        if (!this.newsList[this.tabIndex].length) {
-          this.getPageInfo(index)
-        } else {
-          this.dataList = this.newsList[this.tabIndex]
-        }
-      }, 0)
-    },
-    resize (e) {
-      e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
-    },
-    setEmpty () {
-      let winHeight = window.innerHeight
-      let offsetHeight = this.$refs.tabList.clientHeight
-      let offsetTop = this.$refs.tabList.offsetTop
-      let emptyHeight = winHeight - offsetHeight - offsetTop
-      this.$refs.emptyEle.style.height = emptyHeight + 'px'
-    },
-    loadError (e) {
-      e.target.onerror = null
-      e.target.src = ''
-    },
-    createMedia (e, news) {
-      const curTarget = e.currentTarget
-      this.media = {
-        mediaWidth: curTarget.offsetWidth,
-        mediaHeight: curTarget.offsetHeight,
-        mediaX: curTarget.firstChild.x - curTarget.clientLeft,
-        mediaY: curTarget.firstChild.y - curTarget.clientTop,
-        mediaId: news.mediaid,
-        mediaType: news.mediatype,
-        mediaTitle: news.title,
-        mediaStatus: true
-      }
-      func.createMedia(e, news, this.media, this.pageType)
-    },
-    deleteMediaWatch () {
-      window.addEventListener('scroll', () => {
-        const offsetHeight = window.innerHeight
-        const scrollTop = document.body.scrollTop
-        const titleHeight = this.$refs.tabBar.clientHeight
-        if (this.media.mediaStatus) {
-          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
-            this.media.mediaStatus = false
-            if (this.media.mediaType === 3) {
-              util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: this.media.mediaId
-              })
-            }
-          }
-        }
-      })
-    },
-    getMore () {
-      if (!this.isLoad) {
-        this.isEmpty = false
-        func.deleteMedia(this.media)
-        if (this.isloadmore[this.tabIndex]) {
-          this.isLoad = true
-          this.getPageInfo()
-        }
-      }
-    },
-    scaleQingImg (news, index) {
-      const data = {
-        index: index,
-        newsid: news.newsid,
-        pics: news.pics,
-        sharecontent: news.description,
-        seriesids: news.seriesids,
-        pageType: 5
-      }
-      func.scaleQingImg(data)
-    },
-    toAuthorPage (e, news) {
-      return
-    },
-    toArticleDetail (e, item, index) {
-      const data = {
-        loginId: this.loginInfo.userId,
-        newsId: item.newsid,
-        mediaId: item.mediaid,
-        mediaType: item.mediatype,
-        position: index + 1
-      }
-
-      func.toArticleDetail(e, data)
     }
   }
 }
@@ -669,8 +720,8 @@ export default {
     span
       font-size .7rem
 
-.c-tab-list 
-  border-top .5rem solid #F8F8F8
+// .c-tab-list 
+//   border-top .5rem solid #F8F8F8
 .c-error-tip
   color #f00
 .c-author

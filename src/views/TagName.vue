@@ -163,6 +163,7 @@ export default {
       this.setTabBar()
     })
     this.deleteMediaWatch()
+    this.registerNotice()
   },
   methods: {
     beforePull () {
@@ -178,6 +179,35 @@ export default {
         }
       }, 1500)
     },
+    // 注册全局通知（点赞和关注）
+    registerNotice () {
+      util.callNative('ClientNoticeManager', 'registerNotice', {
+        keys: ['kNotification_yc_followNotification', 'kNotification_yc_praiseNotification']
+      }, (result) => {
+        if (this.newsList.length && result.key === 'kNotification_yc_followNotification') {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
+                  v['isattention'] = result.args.operation
+                }
+              })
+            }
+          })
+        } else if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+          this.newsList.map((news, index) => {
+            if (news.length) {
+              news.map((v) => {
+                if (Number(result.args.newsid) === Number(v['newsid'])) {
+                  v['hasZan'] = true
+                }
+              })
+            }
+          })
+        }
+      })
+    },
+    // tab切换调用native返回相应的index
     setTabBar () {
       util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
         if (this.tabIndex === Number(index.index) && !this.isFirst) {

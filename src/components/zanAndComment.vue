@@ -46,6 +46,16 @@ export default{
       }
       util.chejiahaoPv(pvMap)
     },
+    // 发送点赞全局通知
+    postZanNotice () {
+      let args = {
+        'key': 'kNotification_yc_praiseNotification',
+        'args': {
+          'newsid': this.news.newsid
+        }
+      }
+      util.callNative('ClientNoticeManager', 'postNotice', args)
+    },
     tagCommon () {
       // pv
       const pvMap = {
@@ -79,11 +89,11 @@ export default{
         func.deleteMedia(this.media)
         util.callNative('ClientViewManager', 'login', {}, (res) => {
           if (Number(res.result) === 1) {
-            this.zanHandler(this)
+            this.zanHandler()
           }
         })
       } else {
-        this.zanHandler(this)
+        this.zanHandler()
       }
     },
     zanHandler () {
@@ -100,6 +110,7 @@ export default{
       this.likesLocal.push(this.news.newsid)
       this.setLs('tagliked', this.likesLocal)
       this.$emit('hasZaned', 'zaned')
+      this.postZanNotice()
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
