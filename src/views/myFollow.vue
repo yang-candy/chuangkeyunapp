@@ -218,7 +218,7 @@ export default {
               'userid#1': this.loginInfo.userId || 0
             }
           }
-          util.chejiahaoPv(pvMap)
+          util.chejiahaopagePv(pvMap)
         },
         fail: (status) => {
           if (this.localData.length) {
