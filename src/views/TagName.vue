@@ -247,7 +247,7 @@ export default {
               'objectid#2': util.getParam('tagid')
             }
           }
-          util.chejiahaoPv(pvMap)
+          util.chejiahaopagePv(pvMap)
         },
         fail: (status) => {
           this.isLoad = false

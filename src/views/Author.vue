@@ -182,7 +182,7 @@ export default {
   methods: {
     getPageInfo (index) {
       let pid = this.lastpageid[this.tabIndex] || ''
-      let dt = (this.urlUserId !== this.loginInfo.userId) ? 2 : 3
+      let dt = this.isAuthor ? 3 : 2
       let vuserid = this.urlUserId || ''
       index = index || this.tabIndex
       util.ajax({
@@ -241,7 +241,7 @@ export default {
               'userid2#2': this.urlUserId || 0
             }
           }
-          util.chejiahaoPv(pvMap)
+          util.chejiahaopagePv(pvMap)
         },
         fail: (status) => {
           this.isLoad = false

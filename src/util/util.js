@@ -124,3 +124,12 @@ export function chejiahaoPv (pvMap) {
     'reportjson': pvMap.reportjson
   })
 }
+
+export function chejiahaopagePv (pvMap) {
+  ApiBridge.callNative('ClientPvManager', 'pagePv', {
+    'eventid': pvMap.eventid,
+    'pagename': pvMap.pagename,
+    "isdata": pvMap.isdata,
+    'reportjson': pvMap.reportjson
+  })
+}
