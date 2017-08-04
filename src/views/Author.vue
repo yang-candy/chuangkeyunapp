@@ -102,7 +102,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -143,6 +143,7 @@ export default {
       isAuthor: true,
       isAttention: 0,
       pageType: 4,
+      typeId: 4,
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
@@ -173,7 +174,8 @@ export default {
     util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
       this.loginInfo = user
       this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
-      this.pageType = this.isAuthor ? 4 : 5
+      this.pageType = this.isAuthor ? 4 : 6
+      this.typeId = this.isAuthor ? 4 : 3
       this.getPageInfo()
     })
     util.setViewBounces()
@@ -537,6 +539,9 @@ export default {
           if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
             this.media.mediaStatus = false
             if (this.media.mediaType === 3) {
+              if (window.orientation !== 0 && window.orientation !== 180) {
+                return
+              }
               util.callNative('ClientVideoManager', 'deleteById', {
                 mediaid: this.media.mediaId
               })

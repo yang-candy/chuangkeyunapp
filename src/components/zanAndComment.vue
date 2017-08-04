@@ -16,7 +16,7 @@ import * as util from '../util/util.js'
 import * as func from '../util/index.js'
 
 export default{
-  props: ['newsData', 'user', 'media'],
+  props: ['newsData', 'user', 'media', 'typeId'],
   data () {
     return {
       hasZan: false,
@@ -41,7 +41,7 @@ export default{
         'reportjson': {
           'userid#1': this.user.userId || 0,
           'objectid#2': this.news.newsid,
-          'typeid#3': this.news.typeid
+          'typeid#3': this.typeId
         }
       }
       util.chejiahaoPv(pvMap)

@@ -74,7 +74,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
             
           </li>
@@ -118,6 +118,7 @@ export default {
       isEmpty: false,
       isFirst: false,
       pageType: 3,
+      typeId: 2,
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
@@ -143,22 +144,27 @@ export default {
     }
   },
   mounted () {
-    util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
-      // 未联网
-      if (!Number(data.result)) {
-        util.callNative('ClientViewManager', 'hideLoadingView')
-        util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-          util.callNative('ClientViewManager', 'showLoadingView')
-          // this.isFirst = true
-          // this.setTabBar()
-        })
-      } else {
-        util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
-          this.loginInfo = user
-          // this.isFirst = true
-          // this.setTabBar()
-        })
-      }
+    // util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
+    //   // 未联网
+    //   if (!Number(data.result)) {
+    //     util.callNative('ClientViewManager', 'hideLoadingView')
+    //     util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+    //       util.callNative('ClientViewManager', 'showLoadingView')
+    //       // this.isFirst = true
+    //       // this.setTabBar()
+    //     })
+    //   } else {
+    //     util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+    //       this.loginInfo = user
+    //       // this.isFirst = true
+    //       // this.setTabBar()
+    //     })
+    //   }
+    //   this.isFirst = true
+    //   this.setTabBar()
+    // })
+    util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+      this.loginInfo = user
       this.isFirst = true
       this.setTabBar()
     })
@@ -341,6 +347,9 @@ export default {
           if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
             this.media.mediaStatus = false
             if (this.media.mediaType === 3) {
+              if (window.orientation !== 0 && window.orientation !== 180) {
+                return
+              }
               util.callNative('ClientVideoManager', 'deleteById', {
                 mediaid: this.media.mediaId
               })
