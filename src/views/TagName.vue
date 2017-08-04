@@ -338,27 +338,17 @@ export default {
       }
       func.createMedia(e, news, this.media, this.pageType)
     },
-    deleteMediaWatch () {
+    deleteMediaWatch (top) {
       window.addEventListener('scroll', () => {
-        const offsetHeight = window.innerHeight
         const scrollTop = document.body.scrollTop
         const titleHeight = 40
-        if (this.media.mediaStatus) {
-          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
-            this.media.mediaStatus = false
-            if (this.media.mediaType === 3) {
-              if (window.orientation !== 0 && window.orientation !== 180) {
-                return
-              }
-              util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: this.media.mediaId
-              })
-            }
-          }
-        }
+        func.deleteMediaWatch(scrollTop, this.media, titleHeight)
       })
     },
     getMore () {
+      if (!this.newsList[this.tabIndex].length) {
+        return
+      }
       if (!this.isLoad) {
         this.isEmpty = false
         func.deleteMedia(this.media)

@@ -484,14 +484,12 @@ export default {
     },
     // tab切换
     tabClick (e, index) {
-      this.isEmpty = false
-      this.isLoad = false
       if (this.tabIndex === index) {
         return
       }
+      this.isEmpty = false
+      this.isLoad = false
       this.dataList = []
-      // this.newsList = []
-      // this.lastpageid = ''
       this.tabIndex = index
       func.deleteMedia(this.media)
       setTimeout(() => {
@@ -532,25 +530,15 @@ export default {
     },
     deleteMediaWatch () {
       window.addEventListener('scroll', () => {
-        const offsetHeight = window.innerHeight
         const scrollTop = document.body.scrollTop
         const titleHeight = this.$refs.tabBar.clientHeight
-        if (this.media.mediaStatus) {
-          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
-            this.media.mediaStatus = false
-            if (this.media.mediaType === 3) {
-              if (window.orientation !== 0 && window.orientation !== 180) {
-                return
-              }
-              util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: this.media.mediaId
-              })
-            }
-          }
-        }
+        func.deleteMediaWatch(scrollTop, this.media, titleHeight)
       })
     },
     getMore () {
+      if (!this.newsList[this.tabIndex].length) {
+        return
+      }
       if (!this.isLoad) {
         this.isEmpty = false
         func.deleteMedia(this.media)
@@ -680,4 +668,9 @@ export default {
   color #f00
 .c-author
   display block
+.c-empty p
+    width 80px
+    height 80px
+    text-align center
+    margin-top 94px
 </style>
