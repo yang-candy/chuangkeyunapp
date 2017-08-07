@@ -251,6 +251,8 @@ export default {
   top 0
   bottom 0
   width 5rem
+  height 100%
+  height 100vh
   background #F8F8F8
   overflow-y scroll
 
@@ -270,6 +272,8 @@ export default {
   top 0
   right 0
   bottom 0
+  height 100%
+  height 100vh
   overflow-y scroll
   background #fff
 .c-att-ul .c-att-title
