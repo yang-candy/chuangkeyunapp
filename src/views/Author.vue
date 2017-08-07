@@ -205,30 +205,47 @@ export default {
     },
     // tab切换调用native返回相应的index
     setTabBar () {
-      util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
-        if (this.tabIndex === Number(index.index) && !this.isFirst) {
-          return
-        }
-        this.isLoad = false
-        this.isEmpty = false
-        this.isFirst = false
-        this.dataList = []
-        // this.newsList = []
-        // this.lastpageid = ''
-        // document.body.scrollTop = 0
-        this.tabIndex = Number(index.index)
-        func.deleteMedia(this.media)
-        // this.getPageList(Number(index.index))
+      if (this.tabIndex === Number(util.getParam('index')) && !this.isFirst) {
+        return
+      }
+      this.isLoad = false
+      this.isEmpty = false
+      this.isFirst = false
+      this.dataList = []
+      this.tabIndex = Number(util.getParam('index'))
+      func.deleteMedia(this.media)
 
-        setTimeout(() => {
-          if (!this.newsList[this.tabIndex].length) {
-            // this.getPageList(index)
-            this.getPageList(Number(index.index))
-          } else {
-            this.dataList = this.newsList[this.tabIndex]
-          }
-        }, 0)
-      })
+      setTimeout(() => {
+        if (!this.newsList[this.tabIndex].length) {
+          this.getPageList(this.tabIndex)
+        } else {
+          this.dataList = this.newsList[this.tabIndex]
+        }
+      }, 0)
+      // util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
+      //   if (this.tabIndex === Number(index.index) && !this.isFirst) {
+      //     return
+      //   }
+      //   this.isLoad = false
+      //   this.isEmpty = false
+      //   this.isFirst = false
+      //   this.dataList = []
+      //   // this.newsList = []
+      //   // this.lastpageid = ''
+      //   // document.body.scrollTop = 0
+      //   this.tabIndex = Number(index.index)
+      //   func.deleteMedia(this.media)
+      //   // this.getPageList(Number(index.index))
+
+      //   setTimeout(() => {
+      //     if (!this.newsList[this.tabIndex].length) {
+      //       // this.getPageList(index)
+      //       this.getPageList(Number(index.index))
+      //     } else {
+      //       this.dataList = this.newsList[this.tabIndex]
+      //     }
+      //   }, 0)
+      // })
     },
     // 注册全局通知（点赞）
     registerNotice () {
