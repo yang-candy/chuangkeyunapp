@@ -258,6 +258,7 @@ export default {
 
 .c-att-bar
   li
+    border-left 4px solid #f8f8f8
     line-height 5
     text-indent 1rem
     color #999
