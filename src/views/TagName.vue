@@ -31,7 +31,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img" v-show="item.thumbnailpics.length">
+              <div class="c-media-img" v-if="item.thumbnailpics.length">
                 <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
             </div>
@@ -268,6 +268,10 @@ export default {
     hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
+      if (!likes || !likes.length) {
+        return
+      }
+
       if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {

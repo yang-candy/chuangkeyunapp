@@ -5,7 +5,7 @@
       <div class="c-auth-bg">
         <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
       </div>
-      <div class="c-auth-info">
+      <div class="c-auth-info" ref="authInfo">
         <div class="c-auth-head">
           <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg">
         </div>
@@ -58,7 +58,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img" v-show="item.thumbnailpics.length">
+              <div class="c-media-img" v-if="item.thumbnailpics.length">
                 <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
             </div>
@@ -258,6 +258,9 @@ export default {
     hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
+      if (!likes || !likes.length) {
+        return
+      }
       if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {
@@ -359,12 +362,11 @@ export default {
     navBarWatch (data) {
       let isScrollIn = false
       let isScrollOut = false
-
       this.setNavBar({})
       window.addEventListener('scroll', () => {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = this.$refs.authTitle.clientHeight
-        let $offsetTop = this.$refs.authTitle.offsetTop
+        let $offsetTop = this.$refs.authInfo.offsetTop + this.$refs.authTitle.offsetTop
         let icon1 = {
           icon1: '',
           icon1_p: ''
@@ -525,6 +527,12 @@ export default {
         mediaType: news.mediatype,
         mediaTitle: news.title,
         mediaStatus: true
+      }
+      if (!this.isAuthor && news.mediatype === 3) {
+        this.pageType = 6
+      }
+      if (!this.isAuthor && news.mediatype === 4) {
+        this.pageType = 5
       }
       func.createMedia(e, news, this.media, this.pageType)
     },

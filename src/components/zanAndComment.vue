@@ -30,7 +30,7 @@ export default{
     }
   },
   mounted () {
-    this.likesLocal = this.getLs('tagliked') || []
+    this.likesLocal = []
   },
   methods: {
     chijiaohaoZanPv () {
@@ -87,6 +87,12 @@ export default{
       }
     },
     zanHandler () {
+      // 记录点赞
+      const likes = this.getLs('tagliked') || []
+      this.likesLocal = this.likesLocal.concat(likes)
+      this.likesLocal.push(this.news.newsid)
+      this.setLs('tagliked', this.likesLocal)
+      this.$emit('hasZaned', 'zaned')
       this.hasZan = true
       this.isAddZan = true
       this.news.hasZan = true
@@ -96,10 +102,6 @@ export default{
         this.isAddZan = false
       }, 1000)
 
-      // 记录点赞
-      this.likesLocal.push(this.news.newsid)
-      this.setLs('tagliked', this.likesLocal)
-      this.$emit('hasZaned', 'zaned')
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
