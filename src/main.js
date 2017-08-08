@@ -21,11 +21,7 @@ Vue.use(VueLazyload, {
   adapter: {
     loading (listener) {
       if (listener.el.getAttribute('imgType') === 'audio' || listener.el.getAttribute('imgType') === 'article') {
-        if (listener.el.clientHeight) {
-          listener.el.style.height = listener.el.clientHeight + 'px'
-        } else {
-          listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
-        }
+        listener.el.style.height = listener.el.clientWidth * 0.5625 + 'px'
       }
     }
   },

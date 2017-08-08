@@ -88,15 +88,15 @@ export default{
     },
     zanHandler () {
       // 记录点赞
+      this.hasZan = true
+      this.isAddZan = true
+      this.news.hasZan = true
+      this.news.praisenum++
       const likes = this.getLs('tagliked') || []
       this.likesLocal = this.likesLocal.concat(likes)
       this.likesLocal.push(this.news.newsid)
       this.setLs('tagliked', this.likesLocal)
       this.$emit('hasZaned', 'zaned')
-      this.hasZan = true
-      this.isAddZan = true
-      this.news.hasZan = true
-      this.news.praisenum++
       this.chijiaohaoZanPv()
       setTimeout(() => {
         this.isAddZan = false
