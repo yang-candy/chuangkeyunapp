@@ -90,7 +90,7 @@
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
                 <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
-              <span>
+              <span class="c-media-desc">
                 {{item.title}}
               </span>
             </div>
@@ -360,20 +360,18 @@ export default {
     },
     // 监听顶部导航
     navBarWatch (data) {
-      let isScrollIn = false
-      let isScrollOut = false
       this.setNavBar({})
       window.addEventListener('scroll', () => {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = this.$refs.authTitle.clientHeight
         let $offsetTop = this.$refs.authInfo.offsetTop + this.$refs.authTitle.offsetTop
+        let $winHeight = window.innerHeight
         let icon1 = {
           icon1: '',
           icon1_p: ''
         }
         let info = {}
-        if ($scrollTop >= ($offsetTop + $titleHeight)) {
-          isScrollIn = false
+        if ($scrollTop >= ($offsetTop + $titleHeight) || $offsetTop >= $scrollTop + $winHeight) {
           info = {
             imgurl: this.userInfo.userpic,
             title: this.userInfo.name,
@@ -389,17 +387,9 @@ export default {
             icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
-
-          if (!isScrollOut) {
-            isScrollOut = true
-            this.setNavBar(info)
-          }
+          this.setNavBar(info)
         } else {
-          isScrollOut = false
-          if (!isScrollIn) {
-            isScrollIn = true
-            this.setNavBar(info)
-          }
+          this.setNavBar(info)
         }
         this.setRightIcon(icon1)
       })
@@ -446,9 +436,6 @@ export default {
       util.callNative('ClientNavigationManager', 'setNavBackIcon', {
         navigationbacktype: info.navigationbacktype || 5
       })
-      // util.callNative('ClientNavigationManager', 'setNavCircleIcon', {
-      //   imgurl: info.imgurl || ''
-      // })
       util.callNative('ClientNavigationManager', 'setNavTitle', {
         title: info.title || ''
       })
@@ -493,6 +480,11 @@ export default {
       this.isLoad = false
       this.dataList = []
       this.tabIndex = index
+      this.setNavBar({})
+      this.setRightIcon({
+        icon1: '',
+        icon1_p: ''
+      })
       func.deleteMedia(this.media)
       setTimeout(() => {
         if (!this.newsList[this.tabIndex].length) {

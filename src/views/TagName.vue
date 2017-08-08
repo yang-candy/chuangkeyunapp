@@ -63,7 +63,7 @@
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
                 <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
-              <span>
+              <span class="c-media-desc">
                 {{item.title}}
               </span>
             </div>        
