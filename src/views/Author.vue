@@ -1,9 +1,9 @@
 <template>
-  <div class="c-wp c-author" v-show="isLoaded">
+  <div class="c-wp">
     <div class="c-tab-list" ref="tabList">
       <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
-          <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
+          <li v-for="(item, index) in newsList" @click.stop.prevent="toArticleDetail($event, item, index)">
             <div class="c-media-item">
               <div class="c-media-info" @click.stop="toAuthorPage($event, item)">
                 <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg" alt="">
@@ -102,14 +102,10 @@ export default {
   data () {
     return {
       defaultData: {
-        navBar: ['动态', '长文', '轻文', '视频', '音频'],
-        navBarImg: require('../assets/navbar_bg.png'),
         headImg: require('../assets/pic_head.png')
       },
       tabIndex: 0,
-      isFirst: false,
       hasRequest: false,
-      isLoaded: false,
       isLoad: false,
       isEmpty: false,
       isAuthor: true,
@@ -121,10 +117,9 @@ export default {
       userInfo: {}, // 某条消息的发布者的信息
       shareInfo: {},
       media: {},
-      isloadmore: [0, 0, 0, 0, 0],
-      lastpageid: ['', '', '', '', ''],
-      dataList: [],
-      newsList: [[], [], [], [], []]
+      isloadmore: 0,
+      lastpageid: '',
+      newsList: []
     }
   },
   directives: { // 自定义指令
@@ -148,100 +143,46 @@ export default {
       this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
       this.pageType = this.isAuthor ? 4 : 6
       this.typeId = this.isAuthor ? 4 : 3
-      this.isFirst = true
       this.setTabBar()
     })
     this.deleteMediaWatch()
     this.registerNotice()
   },
   methods: {
-    // tab切换
-    tabClick (e, index) {
-      this.isEmpty = false
-      this.isLoad = false
-      if (this.tabIndex === index) {
-        return
-      }
-      this.dataList = []
-      // this.newsList = []
-      // this.lastpageid = ''
-      this.tabIndex = index
-      func.deleteMedia(this.media)
-      setTimeout(() => {
-        if (!this.newsList[this.tabIndex].length) {
-          this.getPageList(index)
-        } else {
-          this.dataList = this.newsList[this.tabIndex]
-        }
-      }, 0)
-    },
-    // tab切换调用native返回相应的index
-    setTabBar () {
-      if (this.tabIndex === Number(util.getParam('index')) && !this.isFirst) {
-        return
-      }
-      this.isLoad = false
-      this.isEmpty = false
-      this.isFirst = false
-      this.dataList = []
-      this.tabIndex = Number(util.getParam('index'))
-      func.deleteMedia(this.media)
-
-      setTimeout(() => {
-        if (!this.newsList[this.tabIndex].length) {
-          this.getPageList(this.tabIndex)
-        } else {
-          this.dataList = this.newsList[this.tabIndex]
-        }
-      }, 0)
-      // util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
-      //   if (this.tabIndex === Number(index.index) && !this.isFirst) {
-      //     return
-      //   }
-      //   this.isLoad = false
-      //   this.isEmpty = false
-      //   this.isFirst = false
-      //   this.dataList = []
-      //   // this.newsList = []
-      //   // this.lastpageid = ''
-      //   // document.body.scrollTop = 0
-      //   this.tabIndex = Number(index.index)
-      //   func.deleteMedia(this.media)
-      //   // this.getPageList(Number(index.index))
-
-      //   setTimeout(() => {
-      //     if (!this.newsList[this.tabIndex].length) {
-      //       // this.getPageList(index)
-      //       this.getPageList(Number(index.index))
-      //     } else {
-      //       this.dataList = this.newsList[this.tabIndex]
-      //     }
-      //   }, 0)
-      // })
-    },
     // 注册全局通知（点赞）
     registerNotice () {
       util.callNative('ClientNoticeManager', 'registerNotice', {
-        keys: ['kNotification_yc_followNotification', 'kNotification_yc_praiseNotification']
+        keys: ['kNotification_yc_praiseNotification', 'kNotification_yc_deleteNotification']
       }, (result) => {
         if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
-          this.newsList.map((news, index) => {
-            if (news.length) {
-              news.map((v) => {
-                if (Number(result.args.newsid) === Number(v['newsid'])) {
-                  v['hasZan'] = true
-                }
-              })
+          this.newsList.map((v) => {
+            if (Number(result.args.newsid) === Number(v['newsid'])) {
+              v['hasZan'] = true
+            }
+          })
+        } else if (this.newsList.length && result.key === 'kNotification_yc_deleteNotification') {
+          this.newsList.map((v, i) => {
+            if (Number(result.args.newsid) === Number(v['newsid'])) {
+              this.newsList.splice(i, 1)
             }
           })
         }
       })
     },
-    getPageList (index) {
-      let pid = this.lastpageid[this.tabIndex] || ''
+    // tab切换通过url获取相应的index
+    setTabBar () {
+      this.isLoad = false
+      this.isEmpty = false
+      this.newsList = []
+      this.lastpageid = ''
+      this.tabIndex = Number(util.getParam('labelid'))
+      func.deleteMedia(this.media)
+      this.getPageList()
+    },
+    getPageList () {
+      let pid = this.lastpageid || ''
       let dt = this.isAuthor ? 3 : 2
       let vuserid = this.urlUserId || ''
-      index = index || this.tabIndex
       util.ajax({
         url: util.api.newListforvuser,
         type: 'GET',
@@ -257,20 +198,18 @@ export default {
         },
         dataType: 'json',
         success: (res, xml) => {
-          if (Number(this.tabIndex) !== Number(index)) {
-            return
-          }
+          // if (Number(this.tabIndex) !== Number(index)) {
+          //   return
+          // }
           res = JSON.parse(res)
           this.isLoad = false
-          this.isLoaded = true
           util.callNative('ClientViewManager', 'hideLoadingView')
           if (!res.result) {
             return
           }
           if (res.result.newslist.length) {
-            this.newsList[this.tabIndex] = this.newsList[this.tabIndex].concat(res.result.newslist)
+            this.newsList = this.newsList.concat(res.result.newslist)
             this.hasZaned()
-            this.dataList = this.newsList[this.tabIndex]
           }
           if (res.result.userinfo) {
             // res.result.userinfo.userpic = res.result.userinfo.userpic + '&hybridCache=1'
@@ -279,9 +218,9 @@ export default {
               this.shareInfo = res.result.shareinfo
             }
           }
-          this.isEmpty = !this.newsList[this.tabIndex].length
-          this.isloadmore[this.tabIndex] = res.result.isloadmore || 0
-          this.lastpageid[this.tabIndex] = res.result.lastid || ''
+          this.isEmpty = !this.newsList.length
+          this.isloadmore = res.result.isloadmore || 0
+          this.lastpageid = res.result.lastid || ''
           this.hasRequest = true
           // setTimeout(() => {
           //   if (this.isEmpty) {
@@ -315,15 +254,12 @@ export default {
       if (!likes || !likes.length) {
         return
       }
+
       if (likes && likes.length) {
         likes.map((j) => {
-          this.newsList.map((news, index) => {
-            if (news.length) {
-              news.map((v) => {
-                if (j === v['newsid']) {
-                  v['hasZan'] = true
-                }
-              })
+          this.newsList.map((v) => {
+            if (j === v['newsid']) {
+              v['hasZan'] = true
             }
           })
         })
@@ -360,15 +296,9 @@ export default {
           res = JSON.parse(res)
           if (res.result === 1) {
             func.deleteMedia(this.media)
-            if (this.tabIndex) {
-              this.newsList[0].map((item2, index2) => {
-                if (item2.newsid === item.newsid) {
-                  this.newsList[0].splice(index2, 1)
-                }
-              })
-            }
-            this.dataList.splice(index, 1)
-            this.isEmpty = !this.dataList.length
+            this.newsList.splice(index, 1)
+            this.isEmpty = !this.newsList.length
+            this.postDeleteNotice(item.newsid)
             // setTimeout(() => {
             //   if (this.isEmpty) {
             //     this.setEmpty()
@@ -379,22 +309,15 @@ export default {
         fail: (status) => {}
       })
     },
-    getLocalDataForFollow () {
-      // 未登录
-      if (!Number(this.loginInfo.userId)) {
-        try {
-          util.callNative('ClientDataManager', 'getLocalDataForFollow', {}, (follow) => {
-            // 本地数据有
-            if (follow.result.length) {
-              follow.result.map((v) => {
-                if (v['userId'] === Number(this.urlUserId)) {
-                  this.isAttention = 1
-                }
-              })
-            }
-          })
-        } catch (e) {}
+    // 发送删除全局通知
+    postDeleteNotice (newsid) {
+      const args = {
+        'key': 'kNotification_yc_deleteNotification',
+        'args': {
+          'newsid': newsid
+        }
       }
+      util.callNative('ClientNoticeManager', 'postNotice', args)
     },
     setEmpty () {
       let winHeight = window.innerHeight
@@ -431,15 +354,12 @@ export default {
       })
     },
     getMore () {
-      if (!this.newsList[this.tabIndex].length) {
-        return
-      }
       if (!this.isLoad) {
         this.isEmpty = false
         func.deleteMedia(this.media)
-        if (this.isloadmore[this.tabIndex]) {
+        if (this.isloadmore) {
           this.isLoad = true
-          this.getPageInfo()
+          this.getPageList()
         }
       }
     },
@@ -473,99 +393,99 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-.c-auth-top
-  .c-auth-bg
-    width 100%
-    height 6rem
-    &:after
-      content ''
-      position fixed
-      top 0
-      left 0
-      z-index 10
-      width 100%
-      height 3.2rem
-      background url(../assets/layer.png) no-repeat
-      background-size 100% 100%
-    img
-      width 100%
-      height 100%
-  .c-auth-info
-    text-align center
-    position relative
-    .c-auth-head
-      width 3rem
-      height 3rem
-      position absolute
-      top -44px
-      text-align center
-      margin auto
-      left 0
-      right 0
-      img
-        width 100%
-        height 100%
-        border 1px solid rgba(238,238,238,.3)
-        border-radius 50%
-        // background url(../assets/pic_head.png) no-repeat
-        background-color #fff
-        background-size 100% 100%
-        background-clip padding-box
-        overflow hidden
+// .c-auth-top
+//   .c-auth-bg
+//     width 100%
+//     height 6rem
+//     &:after
+//       content ''
+//       position fixed
+//       top 0
+//       left 0
+//       z-index 10
+//       width 100%
+//       height 3.2rem
+//       background url(../assets/layer.png) no-repeat
+//       background-size 100% 100%
+//     img
+//       width 100%
+//       height 100%
+//   .c-auth-info
+//     text-align center
+//     position relative
+//     .c-auth-head
+//       width 3rem
+//       height 3rem
+//       position absolute
+//       top -44px
+//       text-align center
+//       margin auto
+//       left 0
+//       right 0
+//       img
+//         width 100%
+//         height 100%
+//         border 1px solid rgba(238,238,238,.3)
+//         border-radius 50%
+//         // background url(../assets/pic_head.png) no-repeat
+//         background-color #fff
+//         background-size 100% 100%
+//         background-clip padding-box
+//         overflow hidden
         
-  .c-author-intro
-    padding 26px 20px 15px
-    text-align center
-    h3
-      font-size 17px
-      color #333
-      font-weight 400
-      margin 0
-    .c-auth-jj 
-      font-size 12px
-      color #666
-      line-height 16px
-      margin 7px 0
-    .c-auth-tips span
-      font-size 12px
-      margin 0 20px
-      &:first-of-type
-        margin 0
-        &:after
-          content ''
-          width 1px
-          height 12px
-          background #333
-          display inline-block
-          margin-left 20px
-          vertical-align -2px
-  .c-auth-follow
-    display block
-    width 105px
-    height 32px
-    line-height 32px
-    margin auto
-    margin-top: 15px;
-    border 1px solid #2873ff
-    color #2873ff
-    text-decoration none
-    font-size .6rem
-    &.on
-      color #ccc
-      border 1px solid #eee
+//   .c-author-intro
+//     padding 26px 20px 15px
+//     text-align center
+//     h3
+//       font-size 17px
+//       color #333
+//       font-weight 400
+//       margin 0
+//     .c-auth-jj 
+//       font-size 12px
+//       color #666
+//       line-height 16px
+//       margin 7px 0
+//     .c-auth-tips span
+//       font-size 12px
+//       margin 0 20px
+//       &:first-of-type
+//         margin 0
+//         &:after
+//           content ''
+//           width 1px
+//           height 12px
+//           background #333
+//           display inline-block
+//           margin-left 20px
+//           vertical-align -2px
+//   .c-auth-follow
+//     display block
+//     width 105px
+//     height 32px
+//     line-height 32px
+//     margin auto
+//     margin-top: 15px;
+//     border 1px solid #2873ff
+//     color #2873ff
+//     text-decoration none
+//     font-size .6rem
+//     &.on
+//       color #ccc
+//       border 1px solid #eee
     
-    span
-      font-size .7rem
+//     span
+//       font-size .7rem
 
 // .c-tab-list 
 //   border-top .5rem solid #F8F8F8
 .c-error-tip
   color #f00
-.c-author
-  display block
-.c-empty p
-    width 80px
-    height 80px
-    text-align center
-    margin-top 94px
+// .c-author
+//   display block
+// .c-empty p
+//     width 80px
+//     height 80px
+//     text-align center
+//     margin-top 94px
 </style>

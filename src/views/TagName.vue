@@ -112,10 +112,9 @@ export default {
         headImg: require('../assets/pic_head.png')
       },
       tabIndex: 0,
-      hasReFresh: false,
+      isPull: false,
       isLoad: false,
       isEmpty: false,
-      isFirst: false,
       pageType: 3,
       typeId: 2,
       urlUserId: util.getParam('userId'),
@@ -123,7 +122,6 @@ export default {
       media: {},
       isloadmore: 0,
       lastpageid: '',
-      dataList: [],
       newsList: []
     }
   },
@@ -145,7 +143,6 @@ export default {
   mounted () {
     util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
       this.loginInfo = user
-      this.isFirst = true
       this.setTabBar()
     })
     this.deleteMediaWatch()
@@ -158,10 +155,7 @@ export default {
     afterPull () {
       setTimeout(() => {
         if (!this.isLoad) {
-          this.isLoad = true
-          // this.newsList[this.tabIndex] = []
-          // this.lastpageid[this.tabIndex] = ''
-          this.newsList = []
+          this.isPull = true
           this.lastpageid = ''
           this.getPageList()
         }
@@ -177,76 +171,28 @@ export default {
             if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
               v['isattention'] = result.args.operation
             }
-            // if (news.length) {
-            //   news.map((v) => {
-            //     if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
-            //       v['isattention'] = result.args.operation
-            //     }
-            //   })
-            // }
           })
         } else if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
           this.newsList.map((v) => {
             if (Number(result.args.newsid) === Number(v['newsid'])) {
               v['hasZan'] = true
             }
-            // if (news.length) {
-            //   news.map((v) => {
-            //     if (Number(result.args.newsid) === Number(v['newsid'])) {
-            //       v['hasZan'] = true
-            //     }
-            //   })
-            // }
           })
         }
       })
     },
-    // tab切换调用native返回相应的index
+    // tab切换通过url获取相应的index
     setTabBar () {
-      if (this.tabIndex === Number(util.getParam('index')) && !this.isFirst) {
-        return
-      }
       this.isLoad = false
       this.isEmpty = false
-      this.isFirst = false
       this.newsList = []
       this.lastpageid = ''
-      this.tabIndex = Number(util.getParam('index'))
+      this.tabIndex = Number(util.getParam('labelid'))
       func.deleteMedia(this.media)
-      this.getPageList(this.tabIndex)
-      // setTimeout(() => {
-      //   if (!this.newsList.length) {
-      //     this.getPageList(this.tabIndex)
-      //   }
-      // }, 0)
-      // util.callNative('ClientViewManager', 'setTitleLabelCallback', {}, (index) => {
-      //   if (this.tabIndex === Number(index.index) && !this.isFirst) {
-      //     return
-      //   }
-      //   this.isLoad = false
-      //   this.isEmpty = false
-      //   this.isFirst = false
-      //   this.dataList = []
-      //   // this.newsList = []
-      //   // this.lastpageid = ''
-      //   // document.body.scrollTop = 0
-      //   this.tabIndex = Number(index.index)
-      //   func.deleteMedia(this.media)
-      //   // this.getPageList(Number(index.index))
-
-      //   setTimeout(() => {
-      //     if (!this.newsList[this.tabIndex].length) {
-      //       // this.getPageInfo(index)
-      //       this.getPageList(Number(index.index))
-      //     } else {
-      //       this.dataList = this.newsList[this.tabIndex]
-      //     }
-      //   }, 0)
-      // })
+      this.getPageList()
     },
-    getPageList (index) {
+    getPageList () {
       let pid = this.lastpageid || ''
-      index = index || this.tabIndex
       util.ajax({
         url: util.api.npnewlistfortagid,
         type: 'GET',
@@ -261,9 +207,6 @@ export default {
         },
         dataType: 'json',
         success: (res, xml) => {
-          if (Number(this.tabIndex) !== Number(index)) {
-            return
-          }
           res = JSON.parse(res)
           util.callNative('ClientViewManager', 'hideLoadingView')
           this.isLoad = false
@@ -271,8 +214,11 @@ export default {
             return
           }
           if (res.result.newslist.length) {
-            this.newsList = [...this.newsList, ...res.result.newslist]
-            // this.dataList = this.newsList[this.tabIndex]
+            if (this.isPull) {
+              this.newsList = res.result.newslist
+            } else {
+              this.newsList = [...this.newsList, ...res.result.newslist]
+            }
             this.getLocalDataForFollow()
           }
           this.isloadmore = res.result.isloadmore || 0
@@ -312,13 +258,6 @@ export default {
             if (j === v['newsid']) {
               v['hasZan'] = true
             }
-            // if (news.length) {
-            //   news.map((v) => {
-            //     if (j === v['newsid']) {
-            //       v['hasZan'] = true
-            //     }
-            //   })
-            // }
           })
         })
       }

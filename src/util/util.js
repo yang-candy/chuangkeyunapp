@@ -1,5 +1,5 @@
-// import * as ApiBridge from '../mock/apibridge.mock.js'
-require('./kerkee.js')
+import * as ApiBridge from '../mock/apibridge.mock.js'
+// require('./kerkee.js')
 
 export const callNative = ApiBridge.callNative
 export const log = ApiBridge.log

@@ -9,6 +9,7 @@ import Author from './views/Author'
 import TagName from './views/TagName'
 import followMore from './views/followMore'
 import myFollow from './views/myFollow'
+import secondChannel from './views/secondChannel'
 
 export default {
   name: 'app',
@@ -16,7 +17,8 @@ export default {
     Author,
     TagName,
     followMore,
-    myFollow
+    myFollow,
+    secondChannel
   },
   mounted: function () {
     if (/author/.test(window.location.href)) {
@@ -27,6 +29,8 @@ export default {
       this.currentView = 'followMore'
     } else if (/my-follow/.test(window.location.href)) {
       this.currentView = 'myFollow'
+    } else if (/second-channel/.test(window.location.href)) {
+      this.currentView = 'secondChannel'
     }
   },
   data: function () {

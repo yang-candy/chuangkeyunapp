@@ -46,6 +46,16 @@ export default{
       }
       util.chejiahaoPv(pvMap)
     },
+    // 发送点赞全局通知
+    postZanNotice () {
+      const args = {
+        'key': 'kNotification_yc_praiseNotification',
+        'args': {
+          'newsid': this.news.newsid
+        }
+      }
+      util.callNative('ClientNoticeManager', 'postNotice', args)
+    },
     tagCommon () {
       // pv
       const pvMap = {
@@ -97,6 +107,7 @@ export default{
       this.likesLocal.push(this.news.newsid)
       this.setLs('tagliked', this.likesLocal)
       this.$emit('hasZaned', 'zaned')
+      this.postZanNotice()
       this.chijiaohaoZanPv()
       setTimeout(() => {
         this.isAddZan = false
