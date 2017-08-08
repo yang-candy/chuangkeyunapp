@@ -5,7 +5,7 @@
       <div class="c-auth-bg">
         <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
       </div>
-      <div class="c-auth-info">
+      <div class="c-auth-info" ref="authInfo">
         <div class="c-auth-head">
           <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg">
         </div>
@@ -58,7 +58,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img" v-show="item.thumbnailpics.length">
+              <div class="c-media-img" v-if="item.thumbnailpics.length">
                 <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
             </div>
@@ -90,7 +90,7 @@
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
                 <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
-              <span>
+              <span class="c-media-desc">
                 {{item.title}}
               </span>
             </div>
@@ -102,7 +102,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -144,6 +144,7 @@ export default {
       isAuthor: true,
       isAttention: 0,
       pageType: 4,
+      typeId: 4,
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       userInfo: {}, // 某条消息的发布者的信息
@@ -174,11 +175,11 @@ export default {
     util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
       this.loginInfo = user
       this.isAuthor = Number(this.urlUserId) === Number(this.loginInfo.userId)
-      this.pageType = this.isAuthor ? 4 : 5
+      this.pageType = this.isAuthor ? 4 : 6
+      this.typeId = this.isAuthor ? 4 : 3
       this.isFirst = true
       this.setTabBar()
     })
-    // util.setViewBounces()
     this.deleteMediaWatch()
     this.registerNotice()
   },
@@ -344,6 +345,9 @@ export default {
     hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
+      if (!likes || !likes.length) {
+        return
+      }
       if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {
@@ -408,86 +412,6 @@ export default {
         fail: (status) => {}
       })
     },
-    resize (e) {
-      e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
-    },
-    setEmpty () {
-      let winHeight = window.innerHeight
-      let offsetHeight = this.$refs.tabList.clientHeight
-      let offsetTop = this.$refs.tabList.offsetTop
-      let emptyHeight = winHeight - offsetHeight - offsetTop
-      this.$refs.emptyEle.style.height = emptyHeight + 'px'
-    },
-    loadError (e) {
-      e.target.onerror = null
-      e.target.src = ''
-    },
-    createMedia (e, news) {
-      const curTarget = e.currentTarget
-      this.media = {
-        mediaWidth: curTarget.offsetWidth,
-        mediaHeight: curTarget.offsetHeight,
-        mediaX: curTarget.firstChild.x - curTarget.clientLeft,
-        mediaY: curTarget.firstChild.y - curTarget.clientTop,
-        mediaId: news.mediaid,
-        mediaType: news.mediatype,
-        mediaTitle: news.title,
-        mediaStatus: true
-      }
-      func.createMedia(e, news, this.media, this.pageType)
-    },
-    deleteMediaWatch () {
-      window.addEventListener('scroll', () => {
-        const offsetHeight = window.innerHeight
-        const scrollTop = document.body.scrollTop
-        const titleHeight = this.$refs.tabBar.clientHeight
-        if (this.media.mediaStatus) {
-          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
-            this.media.mediaStatus = false
-            if (this.media.mediaType === 3) {
-              util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: this.media.mediaId
-              })
-            }
-          }
-        }
-      })
-    },
-    getMore () {
-      if (!this.isLoad) {
-        this.isEmpty = false
-        func.deleteMedia(this.media)
-        if (this.isloadmore[this.tabIndex]) {
-          this.isLoad = true
-          this.getPageList()
-        }
-      }
-    },
-    scaleQingImg (news, index) {
-      const data = {
-        index: index,
-        newsid: news.newsid,
-        pics: news.pics,
-        sharecontent: news.description,
-        seriesids: news.seriesids,
-        pageType: 5
-      }
-      func.scaleQingImg(data)
-    },
-    toAuthorPage (e, news) {
-      return
-    },
-    toArticleDetail (e, item, index) {
-      const data = {
-        loginId: this.loginInfo.userId,
-        newsId: item.newsid,
-        mediaId: item.mediaid,
-        mediaType: item.mediatype,
-        position: index + 1
-      }
-
-      func.toArticleDetail(e, data)
-    },
     getLocalDataForFollow () {
       // 未登录
       if (!Number(this.loginInfo.userId)) {
@@ -523,21 +447,18 @@ export default {
     },
     // 监听顶部导航
     navBarWatch (data) {
-      let isScrollIn = false
-      let isScrollOut = false
-
       this.setNavBar({})
       window.addEventListener('scroll', () => {
         let $scrollTop = document.body.scrollTop
         let $titleHeight = this.$refs.authTitle.clientHeight
-        let $offsetTop = this.$refs.authTitle.offsetTop
+        let $offsetTop = this.$refs.authInfo.offsetTop + this.$refs.authTitle.offsetTop
+        let $winHeight = window.innerHeight
         let icon1 = {
           icon1: '',
           icon1_p: ''
         }
         let info = {}
-        if ($scrollTop >= ($offsetTop + $titleHeight)) {
-          isScrollIn = false
+        if ($scrollTop >= ($offsetTop + $titleHeight) || $offsetTop >= $scrollTop + $winHeight) {
           info = {
             imgurl: this.userInfo.userpic,
             title: this.userInfo.name,
@@ -553,17 +474,9 @@ export default {
             icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
             icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
           }
-
-          if (!isScrollOut) {
-            isScrollOut = true
-            this.setNavBar(info)
-          }
+          this.setNavBar(info)
         } else {
-          isScrollOut = false
-          if (!isScrollIn) {
-            isScrollIn = true
-            this.setNavBar(info)
-          }
+          this.setNavBar(info)
         }
         this.setRightIcon(icon1)
       })
@@ -610,9 +523,6 @@ export default {
       util.callNative('ClientNavigationManager', 'setNavBackIcon', {
         navigationbacktype: info.navigationbacktype || 5
       })
-      // util.callNative('ClientNavigationManager', 'setNavCircleIcon', {
-      //   imgurl: info.imgurl || ''
-      // })
       util.callNative('ClientNavigationManager', 'setNavTitle', {
         title: info.title || ''
       })
@@ -647,6 +557,85 @@ export default {
         description: this.userInfo.description || ''
       }
       func.followToggle(e, type, info, icon1, this)
+    },
+    resize (e) {
+      e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
+    },
+    setEmpty () {
+      let winHeight = window.innerHeight
+      let offsetHeight = this.$refs.tabList.clientHeight
+      let offsetTop = this.$refs.tabList.offsetTop
+      let emptyHeight = winHeight - offsetHeight - offsetTop
+      this.$refs.emptyEle.style.height = emptyHeight + 'px'
+    },
+    loadError (e) {
+      e.target.onerror = null
+      e.target.src = ''
+    },
+    createMedia (e, news) {
+      const curTarget = e.currentTarget
+      this.media = {
+        mediaWidth: curTarget.offsetWidth,
+        mediaHeight: curTarget.offsetHeight,
+        mediaX: curTarget.firstChild.x - curTarget.clientLeft,
+        mediaY: curTarget.firstChild.y - curTarget.clientTop,
+        mediaId: news.mediaid,
+        mediaType: news.mediatype,
+        mediaTitle: news.title,
+        mediaStatus: true
+      }
+      if (!this.isAuthor && news.mediatype === 3) {
+        this.pageType = 6
+      }
+      if (!this.isAuthor && news.mediatype === 4) {
+        this.pageType = 5
+      }
+      func.createMedia(e, news, this.media, this.pageType)
+    },
+    deleteMediaWatch () {
+      window.addEventListener('scroll', () => {
+        const scrollTop = document.body.scrollTop
+        const titleHeight = this.$refs.tabBar.clientHeight
+        func.deleteMediaWatch(scrollTop, this.media, titleHeight)
+      })
+    },
+    getMore () {
+      if (!this.newsList[this.tabIndex].length) {
+        return
+      }
+      if (!this.isLoad) {
+        this.isEmpty = false
+        func.deleteMedia(this.media)
+        if (this.isloadmore[this.tabIndex]) {
+          this.isLoad = true
+          this.getPageInfo()
+        }
+      }
+    },
+    scaleQingImg (news, index) {
+      const data = {
+        index: index,
+        newsid: news.newsid,
+        pics: news.pics,
+        sharecontent: news.description,
+        seriesids: news.seriesids,
+        pageType: 5
+      }
+      func.scaleQingImg(data)
+    },
+    toAuthorPage (e, news) {
+      return
+    },
+    toArticleDetail (e, item, index) {
+      const data = {
+        loginId: this.loginInfo.userId,
+        newsId: item.newsid,
+        mediaId: item.mediaid,
+        mediaType: item.mediatype,
+        position: index + 1
+      }
+
+      func.toArticleDetail(e, data)
     }
   }
 }
@@ -743,4 +732,9 @@ export default {
   color #f00
 .c-author
   display block
+.c-empty p
+    width 80px
+    height 80px
+    text-align center
+    margin-top 94px
 </style>

@@ -268,7 +268,7 @@ export default {
     // 上拉加载下一页
     getMore (e) {
       this.isEmpty = false
-      if (this.isV) {
+      if (this.isV || this.isEmpty) {
         return
       }
       if (!Number(this.isNet)) {

@@ -218,27 +218,25 @@ export function deleteMedia (media) {
 }
 
 // 监听销毁音频或视频
-export function deleteMediaWatch (media) {
-  window.addEventListener('scroll', function () {
-    let offsetHeight = window.innerHeight
-    let scrollTop = document.body.scrollTop
-    if (media.mediaStatus) {
-      if ((media.mediaHeight + media.mediaY) < scrollTop || (media.mediaY - offsetHeight > scrollTop)) {
-        media.mediaStatus = false
-        if (media.mediaType === 3) {
-          if (window.innerHeight <= window.innerWidth) {
-            return
-          }
-          if (window.orientation !== 0 && window.orientation !== 180) {
-            return
-          }
-          util.callNative('ClientVideoManager', 'deleteById', {
-            mediaid: media.mediaId
-          })
+export function deleteMediaWatch (top, media, titleHeight) {
+  const offsetHeight = window.innerHeight
+  const scrollTop = top
+  if (window.innerWidth > window.innerHeight) {
+    return
+  }
+  if (media.mediaStatus) {
+    if ((media.mediaHeight + media.mediaY - titleHeight) < scrollTop || (media.mediaY - offsetHeight > scrollTop)) {
+      media.mediaStatus = false
+      if (media.mediaType === 3) {
+        if (window.orientation !== 0 && window.orientation !== 180) {
+          return
         }
+        util.callNative('ClientVideoManager', 'deleteById', {
+          mediaid: media.mediaId
+        })
       }
     }
-  })
+  }
 }
 
 export function scaleQingImg (news) {

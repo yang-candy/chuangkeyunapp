@@ -206,11 +206,11 @@ export default {
     },
     // tab切换
     tabClick (id, index) {
-      this.isLoad = false
-      this.isEmpty = false
       if (this.tabIndex === index) {
         return
       }
+      this.isLoad = false
+      this.isEmpty = false
       this.dataList = []
       this.tabIndex = index
       this.followId = id
@@ -229,13 +229,13 @@ export default {
       const $height = $target.clientHeight
       const $scrollTop = $target.scrollTop
       const $docScrollTop = document.body.scrollTop
-      this.isEmpty = false
       if (util.mobileType() === 'iOS') {
         if ($scrollTop === 0) {
           window.scrollTop = $docScrollTop
         }
       }
       if ($scrollTop && $height + $scrollTop >= $scrollHeight) {
+        this.isEmpty = false
         if (!Number(this.isNet)) {
           if (!this.isLoad) {
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
@@ -270,11 +270,14 @@ export default {
   top 0
   bottom 0
   width 5rem
+  height 100%
+  height 100vh
   background #F8F8F8
   overflow-y scroll
 
 .c-att-bar
   li
+    border-left 4px solid #f8f8f8
     line-height 5
     text-indent 1rem
     color #999
@@ -289,6 +292,8 @@ export default {
   top 0
   right 0
   bottom 0
+  height 100%
+  height 100vh
   overflow-y scroll
   background #fff
 .c-att-ul .c-att-title

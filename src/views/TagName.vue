@@ -31,7 +31,7 @@
               <div class="c-media-desc" :class="{'c-media-qing': item.mediatype === 2}">
                 {{item.mediatype === 2 ? item.description : item.title}}
               </div>
-              <div class="c-media-img" v-show="item.thumbnailpics.length">
+              <div class="c-media-img" v-if="item.thumbnailpics.length">
                 <img imgType="article" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
             </div>
@@ -63,7 +63,7 @@
               <div class="media-audio-pic" @click.stop="createMedia($event, item)">
                 <img imgType="audio" class="c-auth-info-img c-auth-audio-img" v-lazy="item.thumbnailpics[0]" alt="">
               </div>
-              <span>
+              <span class="c-media-desc">
                 {{item.title}}
               </span>
             </div>        
@@ -74,7 +74,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
             
           </li>
@@ -118,6 +118,7 @@ export default {
       isEmpty: false,
       isFirst: false,
       pageType: 3,
+      typeId: 2,
       urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
@@ -143,22 +144,27 @@ export default {
     }
   },
   mounted () {
-    util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
-      // 未联网
-      if (!Number(data.result)) {
-        util.callNative('ClientViewManager', 'hideLoadingView')
-        util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
-          util.callNative('ClientViewManager', 'showLoadingView')
-          // this.isFirst = true
-          // this.setTabBar()
-        })
-      } else {
-        util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
-          this.loginInfo = user
-          // this.isFirst = true
-          // this.setTabBar()
-        })
-      }
+    // util.callNative('ClientDataManager', 'getNetworkState', {}, (data) => {
+    //   // 未联网
+    //   if (!Number(data.result)) {
+    //     util.callNative('ClientViewManager', 'hideLoadingView')
+    //     util.callNative('ClientViewManager', 'loadingFailed', {}, () => {
+    //       util.callNative('ClientViewManager', 'showLoadingView')
+    //       // this.isFirst = true
+    //       // this.setTabBar()
+    //     })
+    //   } else {
+    //     util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+    //       this.loginInfo = user
+    //       // this.isFirst = true
+    //       // this.setTabBar()
+    //     })
+    //   }
+    //   this.isFirst = true
+    //   this.setTabBar()
+    // })
+    util.callNative('ClientDataManager', 'getUserInfo', {}, (user) => {
+      this.loginInfo = user
       this.isFirst = true
       this.setTabBar()
     })
@@ -309,6 +315,10 @@ export default {
     hasZaned (value) {
       // 判断赞
       const likes = this.getLs('tagliked')
+      if (!likes || !likes.length) {
+        return
+      }
+
       if (likes && likes.length) {
         likes.map((j) => {
           this.newsList.map((news, index) => {
@@ -379,24 +389,17 @@ export default {
       }
       func.createMedia(e, news, this.media, this.pageType)
     },
-    deleteMediaWatch () {
+    deleteMediaWatch (top) {
       window.addEventListener('scroll', () => {
-        const offsetHeight = window.innerHeight
         const scrollTop = document.body.scrollTop
         const titleHeight = 40
-        if (this.media.mediaStatus) {
-          if ((this.media.mediaHeight + this.media.mediaY - titleHeight) < scrollTop || (this.media.mediaY - offsetHeight > scrollTop)) {
-            this.media.mediaStatus = false
-            if (this.media.mediaType === 3) {
-              util.callNative('ClientVideoManager', 'deleteById', {
-                mediaid: this.media.mediaId
-              })
-            }
-          }
-        }
+        func.deleteMediaWatch(scrollTop, this.media, titleHeight)
       })
     },
     getMore () {
+      if (!this.newsList[this.tabIndex].length) {
+        return
+      }
       if (!this.isLoad) {
         this.isEmpty = false
         func.deleteMedia(this.media)

@@ -16,7 +16,7 @@ import * as util from '../util/util.js'
 import * as func from '../util/index.js'
 
 export default{
-  props: ['newsData', 'user', 'media'],
+  props: ['newsData', 'user', 'media', 'typeId'],
   data () {
     return {
       hasZan: false,
@@ -30,7 +30,7 @@ export default{
     }
   },
   mounted () {
-    this.likesLocal = this.getLs('tagliked') || []
+    this.likesLocal = []
   },
   methods: {
     chijiaohaoZanPv () {
@@ -41,20 +41,10 @@ export default{
         'reportjson': {
           'userid#1': this.user.userId || 0,
           'objectid#2': this.news.newsid,
-          'typeid#3': this.news.typeid
+          'typeid#3': this.typeId
         }
       }
       util.chejiahaoPv(pvMap)
-    },
-    // 发送点赞全局通知
-    postZanNotice () {
-      let args = {
-        'key': 'kNotification_yc_praiseNotification',
-        'args': {
-          'newsid': this.news.newsid
-        }
-      }
-      util.callNative('ClientNoticeManager', 'postNotice', args)
     },
     tagCommon () {
       // pv
@@ -89,28 +79,29 @@ export default{
         func.deleteMedia(this.media)
         util.callNative('ClientViewManager', 'login', {}, (res) => {
           if (Number(res.result) === 1) {
-            this.zanHandler()
+            this.zanHandler(this)
           }
         })
       } else {
-        this.zanHandler()
+        this.zanHandler(this)
       }
     },
     zanHandler () {
+      // 记录点赞
       this.hasZan = true
       this.isAddZan = true
       this.news.hasZan = true
       this.news.praisenum++
+      const likes = this.getLs('tagliked') || []
+      this.likesLocal = this.likesLocal.concat(likes)
+      this.likesLocal.push(this.news.newsid)
+      this.setLs('tagliked', this.likesLocal)
+      this.$emit('hasZaned', 'zaned')
       this.chijiaohaoZanPv()
       setTimeout(() => {
         this.isAddZan = false
       }, 1000)
 
-      // 记录点赞
-      this.likesLocal.push(this.news.newsid)
-      this.setLs('tagliked', this.likesLocal)
-      this.$emit('hasZaned', 'zaned')
-      this.postZanNotice()
       util.callNative('ClientDataManager', 'getSystemConstant', {}, (follow) => {
         util.ajax({
           url: util.api.zanSet,
