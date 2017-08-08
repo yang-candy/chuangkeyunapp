@@ -275,7 +275,7 @@ export function scaleQingImg (news) {
 
 // 点击作者头像获取UserId跳转作者主页
 export function toAuthorPage (e, userId, loginId) {
-  let pageType = (loginId === userId) ? 5 : 7
+  let pageType = (loginId === userId) ? 4 : 5
 
   util.callNative('ClientViewManager', 'pushViewController', {
     pagetype: pageType,

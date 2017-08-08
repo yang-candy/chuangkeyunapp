@@ -1,35 +1,6 @@
 <template>
-  <!-- <keep-alive></keep-alive>>   -->
   <div class="c-wp c-author" v-show="isLoaded">
-    <!-- <div class="c-auth-top">
-      <div class="c-auth-bg">
-        <img imgType="headBg" v-lazy="userInfo.bgimg || defaultData.navBarImg">
-      </div>
-      <div class="c-auth-info" ref="authInfo">
-        <div class="c-auth-head">
-          <img imgType="head" class="c-auth-img" v-lazy="userInfo.userpic || defaultData.headImg">
-        </div>
-        <div class="c-author-intro">
-          <h3 ref="authTitle" class="c-auth-title">{{userInfo.name}}</h3>
-          <p class="c-auth-jj">{{userInfo.desc}}</p>
-          <p class="c-auth-tips">
-            <span class="c-auth-fans">{{userInfo.fanscount}}粉丝</span>
-            <span class="c-auth-work">{{userInfo.publishcount}}作品</span>
-          </p>
-          <p v-if="!isAuthor">
-            <a href="javascript:;" class="c-auth-follow" v-show="!isAttention" @click.stop="followToggle($event, 0)"><span>＋</span> 关注</a>
-            <a href="javascript:;" class="c-auth-follow on" v-show="isAttention" @click.stop="followToggle($event, 1)">已关注</a>
-          </p>
-          
-        </div>
-        
-      </div>
-    </div> -->
     <div class="c-tab-list" ref="tabList">
-      <!-- <ul class="c-tab-title" ref="tabBar">
-        <li :class="{on: tabIndex === index}" v-for="(item, index) in defaultData.navBar" @click.stop="tabClick($event, index)">{{item}}</li>
-      </ul> -->
-
       <div ref="jsTb" v-scroll="getMore">
         <ul class="c-tab-ul">
           <li v-for="(item, index) in dataList" @click.stop.prevent="toArticleDetail($event, item, index)">
@@ -306,10 +277,6 @@ export default {
             if (!this.hasRequest) {
               this.userInfo = res.result.userinfo
               this.shareInfo = res.result.shareinfo
-              // this.isAttention = res.result.userinfo.isattention
-              // this.getLocalDataForFollow()
-              // this.setImgWithBlur()
-              // this.navBarWatch()
             }
           }
           this.isEmpty = !this.newsList[this.tabIndex].length
@@ -429,148 +396,12 @@ export default {
         } catch (e) {}
       }
     },
-    // 高斯模糊设置
-    setImgWithBlur () {
-      const opt = {
-        url: this.userInfo.userpic,
-        set: {
-          radius: util.mobileType() === 'iOS' ? 10 : 30,
-          saturationdeltafactor: util.mobileType() === 'iOS' ? 1 : 1.8,
-          outwidth: '375',
-          leftrightmargin: '30'
-        }
-      }
-
-      util.callNative('ClientImageManager', 'getImageWithBlur', opt, (result) => {
-        this.userInfo.bgimg = 'data:image/jpeg;base64,' + result.result
-      })
-    },
-    // 监听顶部导航
-    navBarWatch (data) {
-      this.setNavBar({})
-      window.addEventListener('scroll', () => {
-        let $scrollTop = document.body.scrollTop
-        let $titleHeight = this.$refs.authTitle.clientHeight
-        let $offsetTop = this.$refs.authInfo.offsetTop + this.$refs.authTitle.offsetTop
-        let $winHeight = window.innerHeight
-        let icon1 = {
-          icon1: '',
-          icon1_p: ''
-        }
-        let info = {}
-        if ($scrollTop >= ($offsetTop + $titleHeight) || $offsetTop >= $scrollTop + $winHeight) {
-          info = {
-            imgurl: this.userInfo.userpic,
-            title: this.userInfo.name,
-            icon2: 'articleplatform_icon_share',
-            icon2_p: 'articleplatform_icon_share_p',
-            navigationbacktype: 1,
-            statusBarStyle: 0,
-            alpha: 1
-          }
-
-          let type = this.isAttention ? 1 : 0
-          icon1 = {
-            icon1: type ? 'articleplatform_icon_correct' : 'articleplatform_icon_add',
-            icon1_p: type ? 'articleplatform_icon_correct_p' : 'articleplatform_icon_add_p'
-          }
-          this.setNavBar(info)
-        } else {
-          this.setNavBar(info)
-        }
-        this.setRightIcon(icon1)
-      })
-    },
-    setRightIcon (icon, flag) {
-      let shareInfo = this.shareInfo
-      if (!this.isAuthor) {
-        let $scrollTop = document.body.scrollTop
-        let $titleHeight = this.$refs.authTitle.clientHeight
-        let $offsetTop = this.$refs.authTitle.offsetTop
-        if (flag !== 'icon2' && $scrollTop < ($offsetTop + $titleHeight)) {
-          icon = {
-            icon1: '',
-            icon1_p: ''
-          }
-        }
-
-        util.callNative('ClientNavigationManager', 'setRightIcon', {
-          righticons: icon
-        }, (result) => {
-          if (result.result === 'icon2') {
-            const opt = {
-              share: {
-                url: shareInfo.shareurl || '',
-                title: shareInfo.sharetitle || '',
-                logo: shareInfo.sharelogo || '',
-                icon: shareInfo.shareicon || ' ',
-                summary: shareInfo.sharesummary || ''
-              },
-              pagetype: 5,
-              sharepositiontype: 44,
-              objectid: this.urlUserId
-            }
-            util.callNative('ClientShareManager', 'shareAction', opt)
-          } else {
-            const type = this.isAttention ? 1 : 0
-            const icon1 = true
-            this.followToggle(null, type, icon1)
-          }
-        })
-      }
-    },
-    setNavBar (info) {
-      util.callNative('ClientNavigationManager', 'setNavBackIcon', {
-        navigationbacktype: info.navigationbacktype || 5
-      })
-      util.callNative('ClientNavigationManager', 'setNavTitle', {
-        title: info.title || ''
-      })
-
-      util.callNative('ClientNavigationManager', 'setNavAlpha', {
-        alpha: info.alpha || 0
-      })
-
-      const statusBarStyle = (info.statusBarStyle === 0) ? 0 : 1
-      util.callNative('ClientViewManager', 'setStatusBarStyle', {
-        statusBarStyle: statusBarStyle
-      })
-
-      if (!this.isAuthor) {
-        const icon2 = {
-          icon2: info.icon2 || 'articleplatform_icon_share_w',
-          icon2_p: info.icon2_p || 'articleplatform_icon_share_w_p'
-        }
-        this.setRightIcon(icon2, 'icon2')
-      }
-    },
-    followToggle (e, type, icon1) {
-      const info = {
-        loginId: this.loginInfo.userId,
-        userId: this.urlUserId,
-        userAuth: this.loginInfo.userAuth,
-        userAgent: this.loginInfo.userAgent,
-        objecttypeid: this.isAuthor ? 7 : 8,
-        userName: this.userInfo.name,
-        imgUrl: this.userInfo.userpic,
-        title: this.userInfo.title || '',
-        description: this.userInfo.description || ''
-      }
-      func.followToggle(e, type, info, icon1, this)
-    },
-    resize (e) {
-      e.target.style.height = e.target.clientWidth * 0.5625 + 'px'
-    },
     setEmpty () {
       let winHeight = window.innerHeight
       let offsetHeight = this.$refs.tabList.clientHeight
       let offsetTop = this.$refs.tabList.offsetTop
       let emptyHeight = winHeight - offsetHeight - offsetTop
       this.$refs.emptyEle.style.height = emptyHeight + 'px'
-    },
-    loadError (e) {
-      e.target.onerror = null
-      e.target.src = ''
     },
     createMedia (e, news) {
       const curTarget = e.currentTarget
