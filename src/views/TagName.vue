@@ -168,14 +168,14 @@ export default {
       }, (result) => {
         if (this.newsList.length && result.key === 'kNotification_yc_followNotification') {
           this.newsList.map((v) => {
-            if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
+            if (Number(result.args.state) === 1 && Number(result.args.userid) === Number(v['userid'])) {
               v['isattention'] = result.args.operation
             }
           })
         } else if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
-          this.newsList.map((v) => {
+          this.newsList.map((v, i) => {
             if (Number(result.args.newsid) === Number(v['newsid'])) {
-              v['hasZan'] = true
+              this.$set(this.newsList[i], 'hasZan', true)
             }
           })
         }

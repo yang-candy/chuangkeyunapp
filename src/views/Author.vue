@@ -155,9 +155,9 @@ export default {
         keys: ['kNotification_yc_praiseNotification', 'kNotification_yc_deleteNotification']
       }, (result) => {
         if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
-          this.newsList.map((v) => {
+          this.newsList.map((v, i) => {
             if (Number(result.args.newsid) === Number(v['newsid'])) {
-              v['hasZan'] = true
+              this.$set(this.newsList[i], 'hasZan', true)
             }
           })
         } else if (this.newsList.length && result.key === 'kNotification_yc_deleteNotification') {
