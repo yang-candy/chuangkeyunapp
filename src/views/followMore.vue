@@ -23,9 +23,9 @@
       </div>
       
     </div>
-    <div class="c-empty" v-show="isEmpty"> 
+    <!-- <div class="c-empty" v-show="isEmpty"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
-    </div>
+    </div> -->
   </div>
 </template>
 <script>
@@ -157,6 +157,9 @@ export default {
             this.getLocalDataForFollow()
           }
           this.isEmpty = !this.followList[this.tabIndex].length
+          if (this.isEmpty) {
+            util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+          }
           // 添加pv
           const pvMap = {
             'eventid': 'chejiahao_allbigvlist_page_pv',
@@ -211,6 +214,7 @@ export default {
       }
       this.isLoad = false
       this.isEmpty = false
+      util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
       this.dataList = []
       this.tabIndex = index
       this.followId = id
@@ -236,6 +240,7 @@ export default {
       }
       if ($scrollTop && $height + $scrollTop >= $scrollHeight) {
         this.isEmpty = false
+        util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
         if (!Number(this.isNet)) {
           if (!this.isLoad) {
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
@@ -273,7 +278,10 @@ export default {
   height 100%
   height 100vh
   background #F8F8F8
-  overflow-y scroll
+  overflow auto
+  &::-webkit-scrollbar
+    width 3px
+    opcity 1
 
 .c-att-bar
   li
@@ -294,8 +302,11 @@ export default {
   bottom 0
   height 100%
   height 100vh
-  overflow-y scroll
+  overflow auto
   background #fff
+  &::-webkit-scrollbar
+    opcity 1
+    width 3px
 .c-att-ul .c-att-title
   width 90px
 @media only screen and (max-width: 320px)

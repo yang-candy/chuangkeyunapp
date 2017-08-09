@@ -1,5 +1,5 @@
-import * as ApiBridge from '../mock/apibridge.mock.js'
-// require('./kerkee.js')
+// import * as ApiBridge from '../mock/apibridge.mock.js'
+require('./kerkee.js')
 
 export const callNative = ApiBridge.callNative
 export const log = ApiBridge.log
@@ -121,6 +121,8 @@ export function chejiahaoPv (pvMap) {
   ApiBridge.callNative('ClientPvManager', 'pageClick', {
     'eventid': pvMap.eventid,
     'pagename': pvMap.pagename,
+    'reportobject': 2,
+    'reportstate': 0,
     'reportjson': pvMap.reportjson
   })
 }

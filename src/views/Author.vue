@@ -83,9 +83,9 @@
         <p>加载中...</p>
       </div>
     </div>
-    <div class="c-empty" v-show="isEmpty" ref="emptyEle"> 
+    <!-- <div class="c-empty" v-show="isEmpty" ref="emptyEle"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -173,6 +173,7 @@ export default {
     setTabBar () {
       this.isLoad = false
       this.isEmpty = false
+      util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
       this.newsList = []
       this.lastpageid = ''
       this.tabIndex = Number(util.getParam('labelid'))
@@ -219,6 +220,9 @@ export default {
             }
           }
           this.isEmpty = !this.newsList.length
+          if (this.isEmpty) {
+            util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+          }
           this.isloadmore = res.result.isloadmore || 0
           this.lastpageid = res.result.lastid || ''
           this.hasRequest = true
@@ -298,6 +302,9 @@ export default {
             func.deleteMedia(this.media)
             this.newsList.splice(index, 1)
             this.isEmpty = !this.newsList.length
+            if (this.isEmpty) {
+              util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+            }
             this.postDeleteNotice(item.newsid)
             // setTimeout(() => {
             //   if (this.isEmpty) {
@@ -356,6 +363,7 @@ export default {
     getMore () {
       if (!this.isLoad) {
         this.isEmpty = false
+        util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
         func.deleteMedia(this.media)
         if (this.isloadmore) {
           this.isLoad = true
@@ -393,99 +401,6 @@ export default {
 </script>
 
 <style lang="stylus" scoped>
-// .c-auth-top
-//   .c-auth-bg
-//     width 100%
-//     height 6rem
-//     &:after
-//       content ''
-//       position fixed
-//       top 0
-//       left 0
-//       z-index 10
-//       width 100%
-//       height 3.2rem
-//       background url(../assets/layer.png) no-repeat
-//       background-size 100% 100%
-//     img
-//       width 100%
-//       height 100%
-//   .c-auth-info
-//     text-align center
-//     position relative
-//     .c-auth-head
-//       width 3rem
-//       height 3rem
-//       position absolute
-//       top -44px
-//       text-align center
-//       margin auto
-//       left 0
-//       right 0
-//       img
-//         width 100%
-//         height 100%
-//         border 1px solid rgba(238,238,238,.3)
-//         border-radius 50%
-//         // background url(../assets/pic_head.png) no-repeat
-//         background-color #fff
-//         background-size 100% 100%
-//         background-clip padding-box
-//         overflow hidden
-        
-//   .c-author-intro
-//     padding 26px 20px 15px
-//     text-align center
-//     h3
-//       font-size 17px
-//       color #333
-//       font-weight 400
-//       margin 0
-//     .c-auth-jj 
-//       font-size 12px
-//       color #666
-//       line-height 16px
-//       margin 7px 0
-//     .c-auth-tips span
-//       font-size 12px
-//       margin 0 20px
-//       &:first-of-type
-//         margin 0
-//         &:after
-//           content ''
-//           width 1px
-//           height 12px
-//           background #333
-//           display inline-block
-//           margin-left 20px
-//           vertical-align -2px
-//   .c-auth-follow
-//     display block
-//     width 105px
-//     height 32px
-//     line-height 32px
-//     margin auto
-//     margin-top: 15px;
-//     border 1px solid #2873ff
-//     color #2873ff
-//     text-decoration none
-//     font-size .6rem
-//     &.on
-//       color #ccc
-//       border 1px solid #eee
-    
-//     span
-//       font-size .7rem
-
-// .c-tab-list 
-//   border-top .5rem solid #F8F8F8
 .c-error-tip
   color #f00
-// .c-author
-//   display block
-// .c-empty p
-//     width 80px
-//     height 80px
-//     text-align center
-//     margin-top 94px
 </style>

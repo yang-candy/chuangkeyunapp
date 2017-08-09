@@ -86,9 +86,9 @@
     </div>
     </top-load-more>
     
-    <div class="c-empty" v-show="isEmpty"> 
+   <!--  <div class="c-empty" v-show="isEmpty"> 
       <p><img src="../assets/pic_empty.png"><br>暂无内容</p>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -185,6 +185,7 @@ export default {
     setTabBar () {
       this.isLoad = false
       this.isEmpty = false
+      util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
       this.newsList = []
       this.lastpageid = ''
       this.tabIndex = Number(util.getParam('labelid'))
@@ -224,6 +225,9 @@ export default {
           this.isloadmore = res.result.isloadmore || 0
           this.lastpageid = res.result.lastid || ''
           this.isEmpty = !this.newsList.length
+          if (this.isEmpty) {
+            util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+          }
           const pvMap = {
             'eventid': 'chejiahao_tag_list_page_pv',
             'pagename': 'chejiahao_tag_list_page',
@@ -334,6 +338,7 @@ export default {
       // }
       if (!this.isLoad) {
         this.isEmpty = false
+        util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
         func.deleteMedia(this.media)
         if (this.isloadmore) {
           this.isLoad = true
