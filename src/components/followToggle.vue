@@ -7,7 +7,7 @@
 import * as util from '../util/util.js'
 
 export default{
-  props: ['attention', 'newsData', 'loginInfo', 'objecttypeid', 'noAttention'],
+  props: ['attention', 'newsData', 'loginInfo', 'objecttypeid', 'noAttention', 'isToast'],
   computed: {
     isAttention: {
       get: function () {
@@ -21,10 +21,11 @@ export default{
   methods: {
     // 发送关注全局通知
     postFollowNotice () {
+      let operation = !this.isAttention ? 1 : 0
       const args = {
         'key': 'kNotification_yc_followNotification',
         'args': {
-          'operation': this.isAttention,
+          'operation': operation,
           'userid': this.newsData.userid,
           'state': 1
         }
@@ -53,7 +54,6 @@ export default{
           })
           return
         }
-        this.postFollowNotice()
         if (Number(this.loginInfo.userId)) {
           let url = 'https://chejiahaoopen.api.autohome.com.cn/OpenUserService.svc/Follow'
           if (this.isAttention) {
@@ -72,19 +72,24 @@ export default{
             dataType: 'json',
             success: (res, xml) => {
               res = JSON.parse(res)
+              this.postFollowNotice()
               if (res.returncode === 0 && res.result === 1) {
                 if (!this.isAttention) {
                   this.isAttention = 1
-                  util.callNative('ClientViewManager', 'showToastView', {
-                    type: 1,
-                    msg: '关注成功'
-                  })
+                  if (this.isToast) {
+                    util.callNative('ClientViewManager', 'showToastView', {
+                      type: 1,
+                      msg: '关注成功'
+                    })
+                  }
                 } else {
                   this.isAttention = 0
-                  util.callNative('ClientViewManager', 'showToastView', {
-                    type: 1,
-                    msg: '取消关注成功'
-                  })
+                  if (this.isToast) {
+                    util.callNative('ClientViewManager', 'showToastView', {
+                      type: 1,
+                      msg: '取消关注成功'
+                    })
+                  }
                 }
                 this.$emit('followEvent', this.isAttention)
               } else {
@@ -120,19 +125,24 @@ export default{
           }
 
           util.callNative('ClientDataManager', url, post, (result) => {
+            this.postFollowNotice()
             if (result.result) {
               if (!this.isAttention) {
                 this.isAttention = 1
-                util.callNative('ClientViewManager', 'showToastView', {
-                  type: 1,
-                  msg: '关注成功'
-                })
+                if (this.isToast) {
+                  util.callNative('ClientViewManager', 'showToastView', {
+                    type: 1,
+                    msg: '关注成功'
+                  })
+                }
               } else {
                 this.isAttention = 0
-                util.callNative('ClientViewManager', 'showToastView', {
-                  type: 1,
-                  msg: '取消关注成功'
-                })
+                if (this.isToast) {
+                  util.callNative('ClientViewManager', 'showToastView', {
+                    type: 1,
+                    msg: '取消关注成功'
+                  })
+                }
               }
               this.$emit('followEvent', this.isAttention)
             }

@@ -10,7 +10,8 @@ export const api = {
   npnewlistfortagid: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/npnewlistfortagid.json',
   getCategoryList: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getCategoryList.json',
   getUserPageByCategory: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getUserPageByCategory.json',
-  npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/npgetvuserlist.json'
+  npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/npgetvuserlist.json',
+  getChannelAll: 'https://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getChannelAll.json'
 }
 
 // export const api = {

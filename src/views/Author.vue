@@ -151,23 +151,37 @@ export default {
   methods: {
     // 注册全局通知（点赞）
     registerNotice () {
-      util.callNative('ClientNoticeManager', 'registerNotice', {
-        keys: ['kNotification_yc_praiseNotification', 'kNotification_yc_deleteNotification']
-      }, (result) => {
-        if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
-          this.newsList.map((v, i) => {
-            if (Number(result.args.newsid) === Number(v['newsid'])) {
-              this.$set(this.newsList[i], 'hasZan', true)
-            }
-          })
-        } else if (this.newsList.length && result.key === 'kNotification_yc_deleteNotification') {
-          this.newsList.map((v, i) => {
-            if (Number(result.args.newsid) === Number(v['newsid'])) {
-              this.newsList.splice(i, 1)
-            }
-          })
-        }
-      })
+      if (this.isAuthor) {
+        util.callNative('ClientNoticeManager', 'registerNotice', {
+          keys: ['kNotification_yc_praiseNotification', 'kNotification_yc_deleteNotification']
+        }, (result) => {
+          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+            this.newsList.map((v, i) => {
+              if (Number(result.args.newsid) === Number(v['newsid'])) {
+                this.$set(this.newsList[i], 'hasZan', true)
+              }
+            })
+          } else if (this.newsList.length && result.key === 'kNotification_yc_deleteNotification') {
+            this.newsList.map((v, i) => {
+              if (Number(result.args.newsid) === Number(v['newsid'])) {
+                this.newsList.splice(i, 1)
+              }
+            })
+          }
+        })
+      } else {
+        util.callNative('ClientNoticeManager', 'registerNotice', {
+          keys: ['kNotification_yc_praiseNotification']
+        }, (result) => {
+          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+            this.newsList.map((v, i) => {
+              if (Number(result.args.newsid) === Number(v['newsid'])) {
+                this.$set(this.newsList[i], 'hasZan', true)
+              }
+            })
+          }
+        })
+      }
     },
     // tab切换通过url获取相应的index
     setTabBar () {

@@ -10,7 +10,7 @@
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
-              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" @followEvent="followToggle(item, $event)"></follow-toggle>
+              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" :isToast="true" @followEvent="followToggle(item, $event)"></follow-toggle>
             </div>
             
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">

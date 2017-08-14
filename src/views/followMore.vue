@@ -67,13 +67,13 @@ export default {
     // 注册全局通知（点赞和关注）
     registerNotice () {
       util.callNative('ClientNoticeManager', 'registerNotice', {
-        keys: ['kNotification_yc_followNotification', 'kNotification_yc_praiseNotification']
+        keys: ['kNotification_yc_followNotification']
       }, (result) => {
         if (this.followList.length && result.key === 'kNotification_yc_followNotification') {
           this.followList.map((news, index) => {
             if (news.length) {
               news.map((v) => {
-                if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
+                if (Number(result.args.state) === 1 && Number(result.args.userid) === Number(v['userid'])) {
                   v['isattention'] = result.args.operation
                 }
               })
