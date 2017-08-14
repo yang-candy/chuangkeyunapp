@@ -11,7 +11,7 @@ export const api = {
   getCategoryList: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getCategoryList.json',
   getUserPageByCategory: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getUserPageByCategory.json',
   npgetvuserlist: 'http://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/npgetvuserlist.json',
-  getChannelAll: 'https://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/getChannelAll.json'
+  channelNewsList: 'https://chejiahao.app.autohome.com.cn/chejiahao_v1_1_0/newspf/channelNewsList.json'
 }
 
 // export const api = {

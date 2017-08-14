@@ -117,7 +117,6 @@ export default {
       isEmpty: false,
       pageType: 3,
       typeId: 2,
-      urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
       isloadmore: 0,

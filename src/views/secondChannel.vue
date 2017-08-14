@@ -111,13 +111,11 @@ export default {
       defaultData: {
         headImg: require('../assets/pic_head.png')
       },
-      tabIndex: 0,
       isPull: false,
       isLoad: false,
       isEmpty: false,
       pageType: 3,
       typeId: 2,
-      urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
       isloadmore: 0,
@@ -188,23 +186,21 @@ export default {
       util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
       this.newsList = []
       this.lastpageid = ''
-      this.tabIndex = Number(util.getParam('channelid'))
       func.deleteMedia(this.media)
       this.getPageList()
     },
     getPageList () {
       let pid = this.lastpageid || ''
       util.ajax({
-        url: util.api.getChannelAll,
+        url: util.api.channelNewsList,
         type: 'GET',
         data: {
           pm: util.mobileType() === 'iOS' ? 1 : 2,
-          tagid: util.getParam('tagid'),
+          tagid: util.getParam('channelid'),
           au: this.loginInfo.userAuth,
           pid: pid,
           pagesize: 20,
-          otype: 0,
-          itype: this.tabIndex || 0
+          otype: 0
         },
         dataType: 'json',
         success: (res, xml) => {
@@ -333,9 +329,6 @@ export default {
       })
     },
     getMore () {
-      // if (!this.newsList[this.tabIndex].length) {
-      //   return
-      // }
       if (!this.isLoad) {
         this.isEmpty = false
         util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')

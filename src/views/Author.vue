@@ -235,16 +235,13 @@ export default {
           }
           this.isEmpty = !this.newsList.length
           if (this.isEmpty) {
-            util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+            util.callNative('ClientViewManager', 'showEmptyDataWithMessage', {
+              msg: '您还没有发布任何内容'
+            })
           }
           this.isloadmore = res.result.isloadmore || 0
           this.lastpageid = res.result.lastid || ''
           this.hasRequest = true
-          // setTimeout(() => {
-          //   if (this.isEmpty) {
-          //     this.setEmpty()
-          //   }
-          // }, 0)
           const pvMap = {
             'eventid': this.isAuthor ? 'chejiahao_bigvuser_pv' : 'chejiahao_mainbigvuser_pv',
             'pagename': this.isAuthor ? 'chejiahao_bigvuser' : 'chejiahao_mainbigvuser',
@@ -317,14 +314,11 @@ export default {
             this.newsList.splice(index, 1)
             this.isEmpty = !this.newsList.length
             if (this.isEmpty) {
-              util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
+              util.callNative('ClientViewManager', 'showEmptyDataWithMessage', {
+                msg: '您还没有发布任何内容'
+              })
             }
             this.postDeleteNotice(item.newsid)
-            // setTimeout(() => {
-            //   if (this.isEmpty) {
-            //     this.setEmpty()
-            //   }
-            // }, 0)
           }
         },
         fail: (status) => {}

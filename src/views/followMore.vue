@@ -49,7 +49,6 @@ export default {
       isFirst: false,
       isNet: true,
       followId: '',
-      urlUserId: util.getParam('userId'),
       loginInfo: {}, // 当前用户的信息（登录者）
       followBarList: [],
       isloadmore: [],

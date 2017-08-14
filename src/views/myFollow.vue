@@ -54,7 +54,6 @@ export default {
       isV: false,
       isloadMore: false,
       lastpageid: '',
-      urlUserId: util.getParam('userId'),
       mobileType: util.mobileType() === 'iOS' ? 1 : 2,
       loginInfo: {}, // 当前用户的信息（登录者
       followList: [],
@@ -110,12 +109,10 @@ export default {
         keys: ['kNotification_yc_followNotification']
       }, (result) => {
         if (this.followList.length && result.key === 'kNotification_yc_followNotification') {
+          this.lastpageid = ''
+          this.followList = []
+          this.localData = []
           this.init()
-          // this.followList.map((news, index) => {
-          //   if (Number(result.args.state) === 1 && Number(result.args.userid) === Number(news['userid'])) {
-          //     news['isattention'] = result.args.operation
-          //   }
-          // })
         }
       })
     },
