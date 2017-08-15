@@ -73,7 +73,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment pageName="author" :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
           </li>
         </ul>
@@ -155,16 +155,23 @@ export default {
         util.callNative('ClientNoticeManager', 'registerNotice', {
           keys: ['kNotification_yc_praiseNotification', 'kNotification_yc_deleteNotification']
         }, (result) => {
-          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification' && util.getParam('page') !== result.args.page) {
             this.newsList.map((v, i) => {
               if (Number(result.args.newsid) === Number(v['newsid'])) {
                 this.$set(this.newsList[i], 'hasZan', true)
+                v['praisenum'] = Number(v['praisenum']) + 1
               }
             })
           } else if (this.newsList.length && result.key === 'kNotification_yc_deleteNotification') {
             this.newsList.map((v, i) => {
               if (Number(result.args.newsid) === Number(v['newsid'])) {
                 this.newsList.splice(i, 1)
+                this.isEmpty = !this.newsList.length
+                if (this.isEmpty) {
+                  util.callNative('ClientViewManager', 'showEmptyDataWithMessage', {
+                    msg: '您还没有发布任何内容'
+                  })
+                }
               }
             })
           }
@@ -173,10 +180,11 @@ export default {
         util.callNative('ClientNoticeManager', 'registerNotice', {
           keys: ['kNotification_yc_praiseNotification']
         }, (result) => {
-          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
+          if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification' && util.getParam('page') !== result.args.page) {
             this.newsList.map((v, i) => {
               if (Number(result.args.newsid) === Number(v['newsid'])) {
                 this.$set(this.newsList[i], 'hasZan', true)
+                v['praisenum'] = Number(v['praisenum']) + 1
               }
             })
           }
@@ -369,15 +377,31 @@ export default {
       })
     },
     getMore () {
-      if (!this.isLoad) {
-        this.isEmpty = false
-        util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
-        func.deleteMedia(this.media)
-        if (this.isloadmore) {
-          this.isLoad = true
-          this.getPageList()
-        }
+      if (this.isLoad) {
+        return
       }
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        if (!Number(state.result)) {
+          util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
+        } else {
+          this.isEmpty = false
+          util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
+          func.deleteMedia(this.media)
+          if (this.isloadmore) {
+            this.isLoad = true
+            this.getPageList()
+          }
+        }
+      })
+      // if (!this.isLoad) {
+      //   this.isEmpty = false
+      //   util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
+      //   func.deleteMedia(this.media)
+      //   if (this.isloadmore) {
+      //     this.isLoad = true
+      //     this.getPageList()
+      //   }
+      // }
     },
     scaleQingImg (news, index) {
       const data = {

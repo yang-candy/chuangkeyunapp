@@ -73,7 +73,7 @@
 
                 <span class="c-media-time" v-show="item['mediatype'] === 4">{{item['playtime']}}</span>
               </p>
-              <zan-and-comment :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
+              <zan-and-comment pageName="second-channel" :newsData="item" :user="loginInfo" :media="media" :typeId="typeId" @hasZaned="hasZaned"></zan-and-comment>
             </div>
             
           </li>
@@ -166,14 +166,15 @@ export default {
       }, (result) => {
         if (this.newsList.length && result.key === 'kNotification_yc_followNotification') {
           this.newsList.map((v) => {
-            if (result.args.state === 1 && Number(result.args.userid) === Number(v['userid'])) {
+            if (Number(result.args.state) === 1 && Number(result.args.userid) === Number(v['userid'])) {
               v['isattention'] = result.args.operation
             }
           })
-        } else if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification') {
-          this.newsList.map((v) => {
+        } else if (this.newsList.length && result.key === 'kNotification_yc_praiseNotification' && util.getParam('page') !== result.args.page) {
+          this.newsList.map((v, i) => {
             if (Number(result.args.newsid) === Number(v['newsid'])) {
-              v['hasZan'] = true
+              this.$set(this.newsList[i], 'hasZan', true)
+              v['praisenum'] = Number(v['praisenum']) + 1
             }
           })
         }
@@ -225,12 +226,11 @@ export default {
             util.callNative('ClientViewManager', 'showEmptyDataWithMessage')
           }
           const pvMap = {
-            'eventid': 'chejiahao_tag_list_page_pv',
-            'pagename': 'chejiahao_tag_list_page',
+            'eventid': 'chejiahao_second_channel_pv',
+            'pagename': 'chejiahao_second_channel',
             'isdata': res.result.newslist.length ? 1 : 0,
             'reportjson': {
-              'userid1#1': this.loginInfo.userId || 0,
-              'objectid#2': util.getParam('tagid')
+              'userid#1': this.loginInfo.userId || 0
             }
           }
           util.chejiahaopagePv(pvMap)
@@ -300,11 +300,6 @@ export default {
         if (item.userid === v['userid']) {
           v.isattention = value
         }
-        // news.map((v) => {
-        //   if (item.userid === v['userid']) {
-        //     v.isattention = value
-        //   }
-        // })
       })
     },
     createMedia (e, news) {
@@ -329,15 +324,22 @@ export default {
       })
     },
     getMore () {
-      if (!this.isLoad) {
-        this.isEmpty = false
-        util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
-        func.deleteMedia(this.media)
-        if (this.isloadmore) {
-          this.isLoad = true
-          this.getPageList()
-        }
+      if (this.isLoad) {
+        return
       }
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        if (!Number(state.result)) {
+          util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
+        } else {
+          this.isEmpty = false
+          util.callNative('ClientViewManager', 'hideEmptyDataWithMessage')
+          func.deleteMedia(this.media)
+          if (this.isloadmore) {
+            this.isLoad = true
+            this.getPageList()
+          }
+        }
+      })
     },
     scaleQingImg (news, index) {
       const data = {

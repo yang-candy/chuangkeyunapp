@@ -5,6 +5,7 @@
 </template>
 
 <script>
+import * as util from './util/util.js'
 import Author from './views/Author'
 import TagName from './views/TagName'
 import followMore from './views/followMore'
@@ -21,15 +22,15 @@ export default {
     secondChannel
   },
   mounted: function () {
-    if (/author/.test(window.location.href)) {
+    if (util.getParam('page') === 'author') {
       this.currentView = 'Author'
-    } else if (/tag-name/.test(window.location.href)) {
+    } else if (util.getParam('page') === 'tag-name') {
       this.currentView = 'TagName'
-    } else if (/follow-more-tab/.test(window.location.href)) {
+    } else if (util.getParam('page') === 'follow-more-tab') {
       this.currentView = 'followMore'
-    } else if (/my-follow/.test(window.location.href)) {
+    } else if (util.getParam('page') === 'my-follow') {
       this.currentView = 'myFollow'
-    } else if (/second-channel/.test(window.location.href)) {
+    } else if (util.getParam('page') === 'second-channel') {
       this.currentView = 'secondChannel'
     }
   },

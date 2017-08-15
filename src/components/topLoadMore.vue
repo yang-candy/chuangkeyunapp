@@ -18,6 +18,8 @@
   
 </template>
 <script>
+import * as util from '../util/util.js'
+
 export default {
   props: {
     beforePull: { // 刷新函数
@@ -53,6 +55,10 @@ export default {
         e.preventDefault()
         return
       }
+
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        this.isNet = state.result
+      })
       // 取第一个手指的触摸点作为起始点
       this.dragStart = e.touches[0].clientY
       this.container.style.transition = 'none'
@@ -105,6 +111,13 @@ export default {
       }
       if (this.loading) {
         e.preventDefault()
+        return
+      }
+      if (!Number(this.isNet)) {
+        this.container.style.transition = '330ms'
+        this.container.style.transform = 'translate3D(0px, 0px, 0px)'
+        this.loading = 0
+        util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
         return
       }
       if (Math.abs(this.percentage) > this.dragThreshold && this.joinRefreshFlag) {

@@ -16,7 +16,7 @@ import * as util from '../util/util.js'
 import * as func from '../util/index.js'
 
 export default{
-  props: ['newsData', 'user', 'media', 'typeId'],
+  props: ['pageName', 'newsData', 'user', 'media', 'typeId'],
   data () {
     return {
       hasZan: false,
@@ -51,7 +51,8 @@ export default{
       const args = {
         'key': 'kNotification_yc_praiseNotification',
         'args': {
-          'newsid': this.news.newsid
+          'newsid': this.news.newsid,
+          'page': this.pageName
         }
       }
       util.callNative('ClientNoticeManager', 'postNotice', args)
