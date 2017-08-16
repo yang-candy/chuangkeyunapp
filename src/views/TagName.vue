@@ -334,7 +334,7 @@ export default {
       })
     },
     getMore () {
-      if (this.isLoad) {
+      if (this.isLoad || !this.isloadmore) {
         return
       }
       util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {

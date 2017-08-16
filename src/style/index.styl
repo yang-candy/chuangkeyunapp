@@ -170,12 +170,26 @@ img[lazy=loading]
   text-align center
   font-size 10px
   color #2873ff
-  border 1px solid #2873ff
+  border 0
   text-decoration none
   box-sizing border-box
+  &:after
+    content ''
+    position absolute
+    top 0
+    left 0
+    border 1px solid #2873ff
+    box-sizing border-box
+    border-radius 1px
+    width 200%
+    height 200%
+    transform scale(0.5)
+    transform-origin left top
   &.on
-    border 1px solid #eee
+    // border 1px solid #eee
     color #ccc
+    &:after
+      border 1px solid #eee
   
   > span
     vertical-align 1px

@@ -115,7 +115,7 @@ export default {
       isLoad: false,
       isEmpty: false,
       pageType: 3,
-      typeId: 2,
+      typeId: 9,
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
       isloadmore: 0,
@@ -325,7 +325,7 @@ export default {
       })
     },
     getMore () {
-      if (this.isLoad) {
+      if (this.isLoad || !this.isloadmore) {
         return
       }
       util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {

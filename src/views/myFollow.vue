@@ -266,45 +266,53 @@ export default {
     // 上拉加载下一页
     getMore (e) {
       this.isEmpty = false
-      if (this.isV || this.isEmpty) {
+      if (this.isV || this.isEmpty || this.isLoad || !this.isloadmore) {
         return
       }
-      if (!Number(this.isNet)) {
-        util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
-        return
-      }
-      // 已登录
-      if (Number(this.loginInfo.userId)) {
-        // 取网络数据
-        // 传lastpageid分页
-        if (!this.isLoad) {
-          if (this.isloadmore) {
-            this.isLoad = true
+      util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+        if (!Number(state.result)) {
+          util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
+        } else {
+          // 已登录
+          if (Number(this.loginInfo.userId)) {
+            // 取网络数据
+            // 传lastpageid分页
+            if (!this.isLoad) {
+              if (this.isloadmore) {
+                this.isLoad = true
 
-            let opt = {
-              au: this.loginInfo.userAuth
+                let opt = {
+                  au: this.loginInfo.userAuth
+                }
+                this.getFollow(opt)
+              } else {
+                this.isLoad = false
+              }
             }
-            this.getFollow(opt)
-          } else {
-            this.isLoad = false
           }
         }
-      } else {
-        // if (this.localData) {
-        //   let ids = []
-        //   this.localData.map(function (v) {
-        //     ids.push(v.userId)
-        //   })
-        //   const opt = {
-        //     vids: ids.toString()
-        //   }
-        //   this.getFollow(opt)
-        //   // if (ids.length < 20) {
-        //   //   return
-        //   // }
-        //   // this.localNextPage()
-        // }
-      }
+      })
+      // if (!Number(this.isNet)) {
+      //   util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
+      //   return
+      // }
+      // // 已登录
+      // if (Number(this.loginInfo.userId)) {
+      //   // 取网络数据
+      //   // 传lastpageid分页
+      //   if (!this.isLoad) {
+      //     if (this.isloadmore) {
+      //       this.isLoad = true
+
+      //       let opt = {
+      //         au: this.loginInfo.userAuth
+      //       }
+      //       this.getFollow(opt)
+      //     } else {
+      //       this.isLoad = false
+      //     }
+      //   }
+      // }
     },
     // 本地上拉翻页
     localNextPage () {

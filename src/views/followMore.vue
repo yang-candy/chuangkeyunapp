@@ -233,14 +233,17 @@ export default {
           window.scrollTop = $docScrollTop
         }
       }
+
+      if (this.isLoad || !this.isloadmore[this.tabIndex]) {
+        return
+      }
       if ($scrollTop && $height + $scrollTop >= $scrollHeight) {
         this.isEmpty = false
-        if (!Number(this.isNet)) {
-          if (!this.isLoad) {
+
+        util.callNative('ClientDataManager', 'getNetworkState', {}, (state) => {
+          if (!Number(state.result)) {
             util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
-          }
-        } else {
-          if (!this.isLoad) {
+          } else {
             if (this.isloadmore[this.tabIndex]) {
               this.isLoad = true
               this.getFollowMoreList()
@@ -248,7 +251,7 @@ export default {
               this.isLoad = false
             }
           }
-        }
+        })
       }
     },
     toAuthorPage (e, news) {
