@@ -216,6 +216,7 @@ export default {
           }
           if (res.result.newslist.length) {
             if (this.isPull) {
+              this.isPull = false
               this.newsList = res.result.newslist
             } else {
               this.newsList = [...this.newsList, ...res.result.newslist]

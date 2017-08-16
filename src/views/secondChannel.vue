@@ -100,7 +100,7 @@ import followToggle from '../components/followToggle'
 import topLoadMore from '../components/topLoadMore'
 
 export default {
-  name: 'tagName',
+  name: 'secondChannel',
   components: {
     zanAndComment,
     followToggle,
@@ -213,6 +213,7 @@ export default {
           }
           if (res.result.newslist.length) {
             if (this.isPull) {
+              this.isPull = false
               this.newsList = res.result.newslist
             } else {
               this.newsList = [...this.newsList, ...res.result.newslist]

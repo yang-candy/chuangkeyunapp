@@ -43,7 +43,7 @@ export default {
       dragStart: null, // 开始抓取标志位
       percentage: 0, // 拖动量的百分比
       changeOneTimeFlag: 0, // 修改dom只执行1次标志位
-      joinRefreshFlag: null // 进入下拉刷新状态标志位
+      joinRefreshFlag: false // 进入下拉刷新状态标志位
     }
   },
   methods: {
@@ -113,10 +113,18 @@ export default {
         e.preventDefault()
         return
       }
-      if (!Number(this.isNet)) {
+      if (!Number(this.isNet) && this.joinRefreshFlag) {
         this.container.style.transition = '330ms'
         this.container.style.transform = 'translate3D(0px, 0px, 0px)'
         this.loading = 0
+        // 重置变量
+        this.changeOneTimeFlag = 0
+        // 重置joinRefreshFlag
+        this.joinRefreshFlag = false
+        // 重置percentage
+        this.dragStart = null
+        // 重置percentage
+        this.percentage = 0
         util.callNative('ClientViewManager', 'showErrorTipsViewForNoNetWork')
         return
       }
@@ -149,7 +157,7 @@ export default {
       // 重置变量
       this.changeOneTimeFlag = 0
       // 重置joinRefreshFlag
-      this.joinRefreshFlag = null
+      this.joinRefreshFlag = false
       // 重置percentage
       this.dragStart = null
       // 重置percentage
