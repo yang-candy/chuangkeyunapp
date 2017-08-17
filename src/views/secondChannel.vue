@@ -10,7 +10,7 @@
                 <img imgType="head" class="c-auth-img" alt="" v-lazy="item.userpic">
                 <p class="c-auth-title">{{item.username}}</p>
               </div>
-              <follow-toggle :noAttention="true" :objecttypeid="2" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" :isToast="true" @followEvent="followToggle(item, $event)"></follow-toggle>
+              <follow-toggle :noAttention="true" :objecttypeid="11" :attention="item.isattention" :newsData="item" :loginInfo="loginInfo" :isToast="true" @followEvent="followToggle(item, $event)"></follow-toggle>
             </div>
             
             <div class="c-media-content c-media-long" v-if="item.mediatype === 1 && !item.recommendShowBigImg">
@@ -114,7 +114,7 @@ export default {
       isPull: false,
       isLoad: false,
       isEmpty: false,
-      pageType: 3,
+      pageType: 8,
       typeId: 9,
       loginInfo: {}, // 当前用户的信息（登录者）
       media: {},
@@ -314,6 +314,12 @@ export default {
         mediaType: news.mediatype,
         mediaTitle: news.title,
         mediaStatus: true
+      }
+      if (news.mediatype === 3) {
+        this.pageType = 8
+      }
+      if (news.mediatype === 4) {
+        this.pageType = 7
       }
       func.createMedia(e, news, this.media, this.pageType)
     },
